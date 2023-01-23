@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server";
 import { TypeOf, z } from "zod";
 
 import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
@@ -34,22 +35,24 @@ const TwitchCalendarSchema = z
   .object({
     data: z
       .object({
-        segments: z.array(
-          z.object({
-            id: z.string(),
-            start_time: z.string().nullable(),
-            end_time: z.string().nullable(),
-            title: z.string().nullable(),
-            canceled_until: z.string().nullable(),
-            category: z
-              .object({
-                id: z.string().nullable(),
-                name: z.string().nullable(),
-              })
-              .nullable(),
-            is_recurring: z.boolean(),
-          })
-        ),
+        segments: z
+          .array(
+            z.object({
+              id: z.string(),
+              start_time: z.string().nullable(),
+              end_time: z.string().nullable(),
+              title: z.string().nullable(),
+              canceled_until: z.string().nullable(),
+              category: z
+                .object({
+                  id: z.string().nullable(),
+                  name: z.string().nullable(),
+                })
+                .nullable(),
+              is_recurring: z.boolean(),
+            })
+          )
+          .nullable(),
       })
       .nullable(),
   })
@@ -78,11 +81,50 @@ const user_fetch = async (param: string): Promise<twitch_user> => {
 };
 
 export const twitchRouter = createTRPCRouter({
-  get_calendar: protectedProcedure
+  getCalendar: protectedProcedure
     .input(z.object({ streamer: z.string() }))
     .query(async ({ input: { streamer } }) => {
-      console.log(streamer);
-      const user = await user_fetch(streamer);
-      return (await calendar_fetch(user.data[0].id))?.data?.segments;
+      const segments = (await calendar_fetch(streamer))?.data?.segments;
+      // if (!segments)
+      //   throw new TRPCError({
+      //     code: "NOT_FOUND",
+      //     message: "Streamer doesn't have calendar",
+      //   });
+      return segments;
+    }),
+  getFollowing: protectedProcedure.query(async ({ ctx }) => {
+    return (
+      await ctx.prisma.user.findUnique({
+        where: {
+          id: ctx.session.user.id,
+        },
+        include: {
+          streamers: true,
+        },
+      })
+    )?.streamers;
+  }),
+  follow: protectedProcedure
+    .input(z.object({ streamer: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const user = await user_fetch(input.streamer);
+      if (!user) {
+        return {
+          error: "could not get streamer data",
+        };
+      }
+      await ctx.prisma.user.update({
+        where: {
+          id: ctx.session.user.id,
+        },
+        data: {
+          streamers: {
+            create: {
+              id: user.data[0].id,
+              name: user.data[0].display_name,
+            },
+          },
+        },
+      });
     }),
 });
