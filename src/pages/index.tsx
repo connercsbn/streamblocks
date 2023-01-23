@@ -108,7 +108,9 @@ const GetCalendar: React.FC = () => {
             )
           )
         ) : (
-          <div className="text-white">Streamer doesn't have a schedule</div>
+          <div className="text-white">
+            Streamer doesn&apos;t have a schedule
+          </div>
         )}
       </div>
     </>
