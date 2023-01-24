@@ -58,13 +58,15 @@ const GetCalendar: React.FC = () => {
           )}
         </button>
       </form>
-      <div className="text-2xl font-bold text-white">You are following:</div>
-      <div>
+      <p className="text-2xl font-extrabold  text-white underline">
+        You are following:
+      </p>
+      <div className="my-2">
         {following.data?.length ? (
           following.data?.map((streamer, key) => (
             <button
               className={
-                "block text-2xl font-bold hover:text-white " +
+                "block pt-1 text-2xl font-bold hover:text-white " +
                 (streamer.id === activeStreamer
                   ? "text-white"
                   : "text-slate-400")
@@ -101,7 +103,10 @@ const GetCalendar: React.FC = () => {
           <div className="m-6 text-sm text-purple-100 subpixel-antialiased md:text-base">
             {calendar.data?.length ? (
               calendar.data?.map(({ title, start_time }, id) => (
-                <h3 key={id} className="text-2xl font-bold text-white">
+                <h3
+                  key={id}
+                  className="font-mono text-2xl font-bold text-white"
+                >
                   {new Date(start_time as string).toDateString()} -- {title}
                 </h3>
               ))
