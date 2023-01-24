@@ -85,11 +85,6 @@ export const twitchRouter = createTRPCRouter({
     .input(z.object({ streamer: z.string() }))
     .query(async ({ input: { streamer } }) => {
       const segments = (await calendar_fetch(streamer))?.data?.segments;
-      // if (!segments)
-      //   throw new TRPCError({
-      //     code: "NOT_FOUND",
-      //     message: "Streamer doesn't have calendar",
-      //   });
       return segments;
     }),
   getFollowing: protectedProcedure.query(async ({ ctx }) => {
@@ -109,10 +104,13 @@ export const twitchRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const user = await user_fetch(input.streamer);
       if (!user) {
-        return {
-          error: "could not get streamer data",
-        };
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          cause: "Streamer not found",
+          message: "Streamer now found",
+        });
       }
+      console.log(user);
       await ctx.prisma.user.update({
         where: {
           id: ctx.session.user.id,
@@ -121,7 +119,9 @@ export const twitchRouter = createTRPCRouter({
           streamers: {
             create: {
               id: user.data[0].id,
-              name: user.data[0].display_name,
+              display_name: user.data[0].display_name,
+              image_url: user.data[0].profile_image_url,
+              description: user.data[0].description,
             },
           },
         },

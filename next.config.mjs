@@ -19,7 +19,10 @@ const config = {
       {
         protocol: "https",
         hostname: "media4.giphy.com",
-        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "static-cdn.jtvnw.net",
       },
     ],
   },

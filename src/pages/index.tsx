@@ -28,25 +28,10 @@ const GetCalendar: React.FC = () => {
     { enabled: !!activeStreamer }
   );
   if (!sessionData?.user) {
-    return (
-      <>
-        <button
-          className="relative rounded-full bg-white/10 px-10 py-3 font-semibold text-white no-underline transition hover:bg-white/20"
-          onClick={sessionData ? () => void signOut() : () => void signIn()}
-        >
-          Sign in
-        </button>
-      </>
-    );
+    return <></>;
   }
   return (
     <>
-      <button
-        className="absolute top-8 right-8 rounded-full bg-white/10 px-10 py-3 font-semibold text-white no-underline transition hover:bg-white/20"
-        onClick={() => void signOut()}
-      >
-        Sign out
-      </button>
       <form
         className="my-4 flex"
         onSubmit={(e) => {
@@ -73,7 +58,7 @@ const GetCalendar: React.FC = () => {
           )}
         </button>
       </form>
-      <div className="text-2xl font-bold text-white">You are following</div>
+      <div className="text-2xl font-bold text-white">You are following:</div>
       <div>
         {following.data?.length ? (
           following.data?.map((streamer, key) => (
@@ -89,26 +74,55 @@ const GetCalendar: React.FC = () => {
               }}
               key={key}
             >
-              {streamer.name}
+              <div className="flex align-middle">
+                <div className="relative mr-2 h-full self-center">
+                  <Image
+                    alt=""
+                    src={streamer.image_url}
+                    height={30}
+                    width={30}
+                  ></Image>
+                </div>
+                <div className="">{streamer.display_name}</div>
+              </div>
             </button>
           ))
         ) : (
           <div className="font-bold text-white">no one</div>
         )}
       </div>
-      <div>
-        {calendar.data?.length ? (
-          calendar.data?.map(({ title, start_time }, id) => (
-            <h3 key={id} className="text-2xl font-bold text-white">
-              {new Date(start_time as string).toDateString()} -- {title}
-            </h3>
-          ))
-        ) : (
-          <div className="text-white">
-            Streamer doesn&apos;t have a schedule
+      {(calendar.isFetching || calendar.isFetched) && (
+        <div className="relative mt-2 flex flex-col justify-between rounded-md border border-purple-200/20 bg-white/5 text-sm text-purple-100 subpixel-antialiased transition-colors hover:border-purple-300/50 md:text-base">
+          <div className="flex items-center space-x-4 bg-white/10 p-2 pl-5 transition-colors hover:bg-white/20">
+            <p className="text-t3-purple-200 text-lg font-medium leading-6 md:text-xl">
+              Schedule
+            </p>
           </div>
-        )}
-      </div>
+          <div className="m-6 text-sm text-purple-100 subpixel-antialiased md:text-base">
+            {calendar.data?.length ? (
+              calendar.data?.map(({ title, start_time }, id) => (
+                <h3 key={id} className="text-2xl font-bold text-white">
+                  {new Date(start_time as string).toDateString()} -- {title}
+                </h3>
+              ))
+            ) : calendar.isFetching ? (
+              <Image
+                alt=""
+                height={50}
+                width={50}
+                src="https://media4.giphy.com/media/3o7bu3XilJ5BOiSGic/giphy.gif?cid=ecf05e4759g7spk1paw3gj518r8tkr534lq4bbqm43d2eycj&rid=giphy.gif&ct=g"
+              />
+            ) : (
+              <Image
+                alt=""
+                height={50}
+                width={50}
+                src="https://media4.giphy.com/media/3o7bu3XilJ5BOiSGic/giphy.gif?cid=ecf05e4759g7spk1paw3gj518r8tkr534lq4bbqm43d2eycj&rid=giphy.gif&ct=g"
+              />
+            )}
+          </div>
+        </div>
+      )}
     </>
   );
 };
