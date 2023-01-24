@@ -101,29 +101,30 @@ const GetCalendar: React.FC = () => {
             </p>
           </div>
           <div className="m-6 text-sm text-purple-100 subpixel-antialiased md:text-base">
-            {calendar.data?.length ? (
-              calendar.data?.map(({ title, start_time }, id) => (
-                <h3
-                  key={id}
-                  className="font-mono text-2xl font-bold text-white"
-                >
-                  {new Date(start_time as string).toDateString()} -- {title}
+            {Array.isArray(calendar.data) ? (
+              !!calendar.data.length ? (
+                calendar.data.map(({ title, start_time }, id) => (
+                  <h3
+                    key={id}
+                    className="font-mono text-2xl font-bold text-white"
+                  >
+                    {new Date(start_time as string).toDateString()} -- {title}
+                  </h3>
+                ))
+              ) : (
+                <h3 className="font-mono text-2xl font-bold text-white">
+                  Schedule not found
                 </h3>
-              ))
-            ) : calendar.isFetching ? (
-              <Image
-                alt=""
-                height={50}
-                width={50}
-                src="https://media4.giphy.com/media/3o7bu3XilJ5BOiSGic/giphy.gif?cid=ecf05e4759g7spk1paw3gj518r8tkr534lq4bbqm43d2eycj&rid=giphy.gif&ct=g"
-              />
+              )
             ) : (
-              <Image
-                alt=""
-                height={50}
-                width={50}
-                src="https://media4.giphy.com/media/3o7bu3XilJ5BOiSGic/giphy.gif?cid=ecf05e4759g7spk1paw3gj518r8tkr534lq4bbqm43d2eycj&rid=giphy.gif&ct=g"
-              />
+              <>
+                <Image
+                  alt=""
+                  height={50}
+                  width={50}
+                  src="https://media4.giphy.com/media/3o7bu3XilJ5BOiSGic/giphy.gif?cid=ecf05e4759g7spk1paw3gj518r8tkr534lq4bbqm43d2eycj&rid=giphy.gif&ct=g"
+                />
+              </>
             )}
           </div>
         </div>

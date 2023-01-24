@@ -52,6 +52,7 @@ const TwitchCalendarSchema = z
               is_recurring: z.boolean(),
             })
           )
+          .nonempty()
           .nullable(),
       })
       .nullable(),
@@ -59,10 +60,13 @@ const TwitchCalendarSchema = z
   .nullable();
 
 export type twitch_calendar_response = z.infer<typeof TwitchCalendarSchema>;
+export type twitch_calendar_error = z.inferFormattedError<
+  typeof TwitchCalendarSchema
+>;
 
 const calendar_fetch = async (
   param: string
-): Promise<twitch_calendar_response> => {
+): Promise<twitch_calendar_response | twitch_calendar_error> => {
   console.log(`param: ${param}`);
   const res = (
     await fetch(
@@ -70,7 +74,12 @@ const calendar_fetch = async (
       opts
     )
   ).json();
-  return TwitchCalendarSchema.parse(await res);
+  const calendarData = TwitchCalendarSchema.safeParse(await res);
+  if (!calendarData.success) {
+    const formattedError = calendarData.error.format();
+    return formattedError;
+  }
+  return calendarData.data;
 };
 
 const user_fetch = async (param: string): Promise<twitch_user> => {
@@ -85,6 +94,9 @@ export const twitchRouter = createTRPCRouter({
     .input(z.object({ streamer: z.string() }))
     .query(async ({ input: { streamer } }) => {
       const segments = (await calendar_fetch(streamer))?.data?.segments;
+      if (!segments) {
+        return [];
+      }
       return segments;
     }),
   getFollowing: protectedProcedure.query(async ({ ctx }) => {
