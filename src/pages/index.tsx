@@ -1,18 +1,23 @@
-import { type NextPage } from "next";
 import { signIn, signOut, useSession } from "next-auth/react";
+import MyCalendar from "../components/calendar";
 import Image from "next/image";
-
 import { api } from "../utils/api";
 import { useRef, useState } from "react";
+import { type NextPage } from "next";
+import { type Event } from "react-big-calendar";
+import type { Streamer } from "@prisma/client";
 
 const GetCalendar: React.FC = () => {
   const { data: sessionData } = useSession();
-  const [activeStreamer, setActiveStreamer] = useState("");
+  const [calendarStreamers, setCalendarStreamers] = useState([] as Streamer[]);
   const newStreamerInput = useRef<HTMLInputElement>(null);
   const apiContext = api.useContext();
   const following = api.twitch.getFollowing.useQuery(undefined, {
     enabled: !!sessionData?.user,
   });
+  if (following.data && !calendarStreamers.length) {
+    setCalendarStreamers(following.data);
+  }
   const follow = api.twitch.follow.useMutation({
     onSuccess: async () => {
       await apiContext.twitch.getFollowing.invalidate();
@@ -24,15 +29,34 @@ const GetCalendar: React.FC = () => {
     },
   });
   const calendar = api.twitch.getCalendar.useQuery(
-    { streamer: activeStreamer },
-    { enabled: !!activeStreamer }
+    { streamer_ids: calendarStreamers.map((streamer) => streamer.id) },
+    { enabled: !!calendarStreamers[0]?.id }
   );
   if (!sessionData?.user) {
     return <></>;
   }
   return (
     <>
-      <form
+      <MyCalendar
+        events={[]}
+        // events={
+        // (calendar.data?.flat().map(({start_time, end_time, title}) => {
+        //     return {
+        //       start: new Date(start_time),
+        //       end: new Date(end_time),
+        //       title,
+        //     };
+        //   }) as Event[])
+        // }
+      />
+      <button
+        className="relative m-4 self-end rounded-full bg-white/10 p-4 px-6 font-bold text-white no-underline transition hover:bg-white/20"
+        onClick={() => follow.mutate({ streamer: "whatever" })}
+      >
+        Load streamers you follow
+      </button>
+      <div className="text-lg text-white">{JSON.stringify(calendar.data)}</div>
+      {/* <form
         className="my-4 flex"
         onSubmit={(e) => {
           e.preventDefault();
@@ -57,23 +81,17 @@ const GetCalendar: React.FC = () => {
             <div className="px-3 py-3">Follow</div>
           )}
         </button>
-      </form>
-      <p className="text-2xl font-extrabold  text-white underline">
+      </form> */}
+      {/* <p className="text-2xl font-extrabold  text-white underline">
         You are following:
-      </p>
+      </p> */}
       <div className="my-2">
-        {following.data?.length ? (
-          following.data?.map((streamer, key) => (
-            <button
+        {calendarStreamers.length ? (
+          calendarStreamers.map((streamer, key) => (
+            <div
               className={
-                "block pt-1 text-2xl font-bold hover:text-white " +
-                (streamer.id === activeStreamer
-                  ? "text-white"
-                  : "text-slate-400")
+                "block pt-1 text-2xl font-bold text-white hover:text-white"
               }
-              onClick={() => {
-                setActiveStreamer(streamer.id);
-              }}
               key={key}
             >
               <div className="flex align-middle">
@@ -85,15 +103,18 @@ const GetCalendar: React.FC = () => {
                     width={30}
                   ></Image>
                 </div>
-                <div className="">{streamer.display_name}</div>
+                <div className="">
+                  {streamer.display_name} - {streamer.view_count} -{" "}
+                  {following.data?.length}
+                </div>
               </div>
-            </button>
+            </div>
           ))
         ) : (
           <div className="font-bold text-white">no one</div>
         )}
       </div>
-      {(calendar.isFetching || calendar.isFetched) && (
+      {/* {(calendar.isFetching || calendar.isFetched) && (
         <div className="relative mt-2 flex flex-col justify-between rounded-md border border-purple-200/20 bg-white/5 text-sm text-purple-100 subpixel-antialiased transition-colors hover:border-purple-300/50 md:text-base">
           <div className="flex items-center space-x-4 bg-white/10 p-2 pl-5 transition-colors hover:bg-white/20">
             <p className="text-t3-purple-200 text-lg font-medium leading-6 md:text-xl">
@@ -128,7 +149,7 @@ const GetCalendar: React.FC = () => {
             )}
           </div>
         </div>
-      )}
+      )} */}
     </>
   );
 };
@@ -141,7 +162,7 @@ const Home: NextPage = () => {
           Twitch <span className="text-[hsl(280,100%,70%)]">Calendar</span>{" "}
           Thingy
         </h1>
-        <div className="flex flex-col items-start gap-2">
+        <div className="flex w-full flex-col items-start gap-2">
           <GetCalendar />
         </div>
       </div>

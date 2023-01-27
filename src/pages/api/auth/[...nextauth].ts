@@ -1,10 +1,13 @@
 import NextAuth, { type NextAuthOptions } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
+import TwitchProvider from "next-auth/providers/twitch";
 // Prisma adapter for NextAuth, optional and can be removed
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 
 import { env } from "../../../env/server.mjs";
 import { prisma } from "../../../server/db";
+import { OAuthUserConfig } from "next-auth/providers/oauth.js";
+import { TwitchProfile } from "next-auth/providers/twitch";
 
 export const authOptions: NextAuthOptions = {
   // Include user.id on session
@@ -22,6 +25,19 @@ export const authOptions: NextAuthOptions = {
     DiscordProvider({
       clientId: env.DISCORD_CLIENT_ID,
       clientSecret: env.DISCORD_CLIENT_SECRET,
+    }),
+    TwitchProvider({
+      clientId: env.TWITCH_CLIENT_ID,
+      clientSecret: env.TWITCH_CLIENT_SECRET,
+      profile(profile: TwitchProfile) {
+        console.log(profile);
+        return {
+          id: profile.sub,
+          name: profile.preferred_username,
+          email: profile.email,
+          image: profile.picture,
+        };
+      },
     }),
     /**
      * ...add more providers here
