@@ -1,7 +1,6 @@
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { contextProps } from "@trpc/react-query/shared";
 
 const opts = {
   method: "GET",

@@ -31,7 +31,7 @@ const GetCalendar: React.FC = () => {
   const calendar = api.twitch.getCalendar.useQuery(
     { streamer_ids: following.data?.map((streamer) => streamer.id) ?? [] },
     {
-      enabled: !!following.data?.some((streamer) => Boolean(streamer.id)),
+      enabled: !!following.data?.some((streamer) => streamer.id),
       refetchOnWindowFocus: false,
     }
   );
@@ -44,83 +44,19 @@ const GetCalendar: React.FC = () => {
   }
   return (
     <>
-      <MyCalendar
-        events={calendarStreamers}
-        // events={
-        // (calendar.data?.flat().map(({start_time, end_time, title}) => {
-        //     return {
-        //       start: new Date(start_time),
-        //       end: new Date(end_time),
-        //       title,
-        //     };
-        //   }) as Event[])
-        // }
-      />
+      <MyCalendar events={calendarStreamers} />
       <button
         className="relative m-4 self-end rounded-full bg-white/10 p-4 px-6 font-bold text-white no-underline transition hover:bg-white/20"
         onClick={() => follow.mutate()}
       >
         Load streamers you follow
       </button>
-      <div className="text-lg text-white">
-        <pre>{JSON.stringify(calendarStreamers, undefined, 2)}</pre>
-      </div>
-      <div>
-        <pre>
-          {JSON.stringify(
-            calendarStreamers
-              .flatMap((calendar) => calendar?.data?.segments)
-              .filter(
-                (calendar) =>
-                  !!calendar?.start_time &&
-                  !!calendar?.end_time &&
-                  !!calendar.title
-              )
-              .map((calendar) => {
-                return {
-                  start_time: new Date(calendar!.start_time),
-                  end_time: new Date(calendar!.end_time),
-                  title: calendar!.title,
-                };
-              })
-              .filter((x) => x) as Event[],
-            undefined,
-            2
-          )}
-        </pre>
-      </div>
-      {/* <form
-        className="my-4 flex"
-        onSubmit={(e) => {
-          e.preventDefault();
-          follow.mutate({
-            streamer: newStreamerInput.current?.value as string,
-          });
-        }}
-      >
-        <input className="p-3" type="text" ref={newStreamerInput}></input>
-        <button
-          className="relative bg-white/10 font-semibold text-white no-underline transition hover:bg-white/20"
-          type="submit"
-        >
-          {follow.isLoading ? (
-            <Image
-              alt=""
-              height={50}
-              width={50}
-              src="https://media4.giphy.com/media/3o7bu3XilJ5BOiSGic/giphy.gif?cid=ecf05e4759g7spk1paw3gj518r8tkr534lq4bbqm43d2eycj&rid=giphy.gif&ct=g"
-            />
-          ) : (
-            <div className="px-3 py-3">Follow</div>
-          )}
-        </button>
-      </form> */}
-      {/* <p className="text-2xl font-extrabold  text-white underline">
-        You are following:
-      </p> */}
-      {/* <div className="my-2">
-        {calendarStreamers.length ? (
-          calendarStreamers.map((streamer, key) => (
+      <p className="text-2xl font-extrabold  text-white underline">
+        You are following (limited to 10 for the time being):
+      </p>
+      <div className="my-2">
+        {following?.data?.length ? (
+          following.data.map((streamer, key) => (
             <div
               className={
                 "block pt-1 text-2xl font-bold text-white hover:text-white"
@@ -136,17 +72,14 @@ const GetCalendar: React.FC = () => {
                     width={30}
                   ></Image>
                 </div>
-                <div className="">
-                  {streamer.display_name} - {streamer.view_count} -{" "}
-                  {following.data?.length}
-                </div>
+                <div className="">{streamer.display_name}</div>
               </div>
             </div>
           ))
         ) : (
           <div className="font-bold text-white">no one</div>
         )}
-      </div> */}
+      </div>
       {/* {(calendar.isFetching || calendar.isFetched) && (
         <div className="relative mt-2 flex flex-col justify-between rounded-md border border-purple-200/20 bg-white/5 text-sm text-purple-100 subpixel-antialiased transition-colors hover:border-purple-300/50 md:text-base">
           <div className="flex items-center space-x-4 bg-white/10 p-2 pl-5 transition-colors hover:bg-white/20">
