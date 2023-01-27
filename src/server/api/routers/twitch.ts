@@ -1,13 +1,12 @@
-import { TRPCError } from "@trpc/server";
-import { TypeOf, z } from "zod";
+import { z } from "zod";
 
-import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 const opts = {
   method: "GET",
   headers: {
-    Authorization: "Bearer flgd79qqfjethh76d86h8v247znlbb",
-    "Client-Id": "vpk2m43tbxjouwxk23phgsknh5b5xi",
+    Authorization: "Bearer 1qcw38klnib9a9ldpci632wu65fyu8",
+    "Client-Id": "5f40c5goeja3illv2458wbvq2e9kbf",
   },
 };
 
@@ -31,6 +30,22 @@ const TwitchUserSchema = z.object({
 });
 export type twitch_user = z.infer<typeof TwitchUserSchema>;
 
+const TwitchFollowSchema = z.object({
+  total: z.number(),
+  data: z.array(
+    z.object({
+      from_id: z.string(),
+      from_login: z.string(),
+      from_name: z.string(),
+      to_id: z.string(),
+      to_login: z.string(),
+      to_name: z.string(),
+      followed_at: z.string(),
+    })
+  ),
+});
+export type twitch_follow_response = z.infer<typeof TwitchFollowSchema>;
+
 const TwitchCalendarSchema = z
   .object({
     data: z
@@ -39,8 +54,8 @@ const TwitchCalendarSchema = z
           .array(
             z.object({
               id: z.string(),
-              start_time: z.string().nullable(),
-              end_time: z.string().nullable(),
+              start_time: z.string(),
+              end_time: z.string(),
               title: z.string().nullable(),
               canceled_until: z.string().nullable(),
               category: z
@@ -64,10 +79,22 @@ export type twitch_calendar_error = z.inferFormattedError<
   typeof TwitchCalendarSchema
 >;
 
+const follow_fetch = async (id: string): Promise<twitch_follow_response> => {
+  console.log(`param for follow_fetch: ${id}`);
+  const res = (
+    await fetch(
+      `https://api.twitch.tv/helix/users/follows?from_id=${id}&first=10`,
+      opts
+    )
+  ).json();
+  console.log(await res);
+  return TwitchFollowSchema.parse(await res);
+};
+
 const calendar_fetch = async (
   param: string
-): Promise<twitch_calendar_response | twitch_calendar_error> => {
-  console.log(`param: ${param}`);
+): Promise<twitch_calendar_response | undefined> => {
+  console.log(`param for calendar_fetch: ${param}`);
   const res = (
     await fetch(
       `https://api.twitch.tv/helix/schedule?broadcaster_id=${param}`,
@@ -76,28 +103,33 @@ const calendar_fetch = async (
   ).json();
   const calendarData = TwitchCalendarSchema.safeParse(await res);
   if (!calendarData.success) {
-    const formattedError = calendarData.error.format();
-    return formattedError;
+    console.log(calendarData.error.format());
+    return;
   }
   return calendarData.data;
 };
 
 const user_fetch = async (param: string): Promise<twitch_user> => {
+  console.log("param for user_fetch: ", param);
   const res = (
-    await fetch(`https://api.twitch.tv/helix/users?login=${param}`, opts)
+    await fetch(`https://api.twitch.tv/helix/users?id=${param}`, opts)
   ).json();
   return TwitchUserSchema.parse(await res);
 };
 
 export const twitchRouter = createTRPCRouter({
   getCalendar: protectedProcedure
-    .input(z.object({ streamer: z.string() }))
-    .query(async ({ input: { streamer } }) => {
-      const segments = (await calendar_fetch(streamer))?.data?.segments;
-      if (!segments) {
-        return [];
-      }
-      return segments;
+    .input(z.object({ streamer_ids: z.array(z.string()) }))
+    .query(async ({ input: { streamer_ids } }) => {
+      const streamersWithoutCalendars: string[] = [];
+      const streamerCalendars = streamer_ids.map(async (id) => {
+        const tempCal = await calendar_fetch(id);
+        if (!tempCal) {
+          streamersWithoutCalendars.push(id);
+        }
+        return tempCal;
+      });
+      return (await Promise.all(streamerCalendars)).filter(Boolean);
     }),
   getFollowing: protectedProcedure.query(async ({ ctx }) => {
     return (
@@ -111,32 +143,55 @@ export const twitchRouter = createTRPCRouter({
       })
     )?.streamers;
   }),
-  follow: protectedProcedure
-    .input(z.object({ streamer: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const user = await user_fetch(input.streamer);
-      if (!user) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          cause: "Streamer not found",
-          message: "Streamer now found",
-        });
-      }
-      console.log(user);
-      await ctx.prisma.user.update({
+  follow: protectedProcedure.mutation(async ({ ctx }) => {
+    const userId = ctx.session.user.id;
+    const { providerAccountId: twitchId } =
+      await ctx.prisma.account.findFirstOrThrow({
         where: {
-          id: ctx.session.user.id,
-        },
-        data: {
-          streamers: {
-            create: {
-              id: user.data[0].id,
-              display_name: user.data[0].display_name,
-              image_url: user.data[0].profile_image_url,
-              description: user.data[0].description,
-            },
-          },
+          userId: userId,
         },
       });
-    }),
+    const followingDb = (
+      await ctx.prisma.user.findFirstOrThrow({
+        where: { id: userId },
+        include: { streamers: true },
+      })
+    ).streamers.map((streamer) => streamer.id);
+    const followingTwitch = (await follow_fetch(twitchId)).data.map(
+      (streamer) => streamer.to_id
+    );
+    const notYetFollowingInDb = await Promise.all(
+      followingTwitch
+        .filter((streamer) => !followingDb.includes(streamer))
+        .map((streamer) => user_fetch(streamer))
+    );
+    const info = notYetFollowingInDb
+      .flatMap((streamer) => streamer.data)
+      .map(
+        ({ description, display_name, id, profile_image_url, view_count }) => {
+          return {
+            create: {
+              id,
+              description,
+              display_name,
+              view_count,
+              image_url: profile_image_url,
+            },
+            where: {
+              id,
+            },
+          };
+        }
+      );
+    await ctx.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        streamers: {
+          connectOrCreate: info,
+        },
+      },
+    });
+  }),
 });

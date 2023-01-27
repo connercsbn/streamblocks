@@ -4,19 +4,31 @@ import moment from "moment";
 import { PropsWithChildren } from "react";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { type Event } from "react-big-calendar";
+import { twitch_calendar_response } from "../server/api/routers/twitch";
 
 const localizer = momentLocalizer(moment);
 
 export default function MyCalendar(
-  props: PropsWithChildren<{ events: Event[][] }>
+  props: PropsWithChildren<{ events: twitch_calendar_response[] }>
 ) {
-  console.log(props.events);
+  const events = props.events
+    .flatMap((event) =>
+      event?.data?.segments?.map((segment) => {
+        return {
+          start: new Date(segment.start_time),
+          end: new Date(segment.end_time),
+          title: segment.title,
+        };
+      })
+    )
+    .filter(Boolean) as Event[];
+
   return (
     <div className="w-full bg-white">
       <Calendar
         defaultView="week"
         localizer={localizer}
-        events={props.events}
+        events={events}
         startAccessor="start"
         endAccessor="end"
         style={{ height: 800 }}
