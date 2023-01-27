@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { contextProps } from "@trpc/react-query/shared";
 
 const opts = {
   method: "GET",
@@ -120,16 +121,30 @@ const user_fetch = async (param: string): Promise<twitch_user> => {
 export const twitchRouter = createTRPCRouter({
   getCalendar: protectedProcedure
     .input(z.object({ streamer_ids: z.array(z.string()) }))
-    .query(async ({ input: { streamer_ids } }) => {
-      const streamersWithoutCalendars: string[] = [];
-      const streamerCalendars = streamer_ids.map(async (id) => {
-        const tempCal = await calendar_fetch(id);
-        if (!tempCal) {
-          streamersWithoutCalendars.push(id);
+    .query(async ({ input: { streamer_ids }, ctx }) => {
+      const streamersWithoutCalendars = [] as string[];
+      const streamerCalendars = [] as (twitch_calendar_response | undefined)[];
+      for (const streamer_id of streamer_ids) {
+        const tempCal = await calendar_fetch(streamer_id);
+        if (tempCal?.data?.segments) {
+          streamerCalendars.push(tempCal);
+        } else {
+          streamersWithoutCalendars.push(streamer_id);
         }
-        return tempCal;
-      });
-      return (await Promise.all(streamerCalendars)).filter(Boolean);
+      }
+      console.log(
+        "streamers without calendars: ",
+        (
+          await ctx.prisma.streamer.findMany({
+            where: {
+              id: {
+                in: streamersWithoutCalendars,
+              },
+            },
+          })
+        ).map((streamer) => streamer.display_name)
+      );
+      return streamerCalendars;
     }),
   getFollowing: protectedProcedure.query(async ({ ctx }) => {
     return (
