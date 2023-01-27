@@ -157,6 +157,24 @@ export const twitchRouter = createTRPCRouter({
       })
     )?.streamers;
   }),
+
+  addToTopEight: protectedProcedure
+    .input(z.object({ streamer_id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+      await ctx.prisma.user.update({
+        where: {
+          id: userId,
+        },
+        data: {
+          topEight: {
+            connect: {
+              id: input.streamer_id,
+            },
+          },
+        },
+      });
+    }),
   follow: protectedProcedure.mutation(async ({ ctx }) => {
     const userId = ctx.session.user.id;
     const { providerAccountId: twitchId } =

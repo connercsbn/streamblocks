@@ -1,10 +1,10 @@
 import "react-calendar/dist/Calendar.css";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
-import { PropsWithChildren } from "react";
+import { type PropsWithChildren } from "react";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { type Event } from "react-big-calendar";
-import { twitch_calendar_response } from "../server/api/routers/twitch";
+import { type twitch_calendar_response } from "../server/api/routers/twitch";
 
 const localizer = momentLocalizer(moment);
 
