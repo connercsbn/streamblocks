@@ -1,6 +1,7 @@
 import { useSession } from "next-auth/react";
 import MyCalendar from "../components/calendar";
-import { TopEight, Following } from "../components/following";
+import Following from "../components/following";
+import TopEight from "../components/topEight";
 import { api } from "../utils/api";
 import { useRef } from "react";
 import { type NextPage } from "next";
