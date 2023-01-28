@@ -1,17 +1,13 @@
 import { useSession } from "next-auth/react";
 import MyCalendar from "../components/calendar";
-import Following from "../components/following";
+import { TopEight, Following } from "../components/following";
 import { api } from "../utils/api";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { type NextPage } from "next";
-import type { Streamer } from "@prisma/client";
 import type { twitch_calendar_response } from "../server/api/routers/twitch";
 
 const GetCalendar: React.FC = () => {
   const { data: sessionData } = useSession();
-  const [calendarStreamers, setCalendarStreamers] = useState(
-    [] as twitch_calendar_response[]
-  );
   const newStreamerInput = useRef<HTMLInputElement>(null);
   const apiContext = api.useContext();
   const following = api.twitch.getFollowing.useQuery(undefined, {
@@ -27,29 +23,29 @@ const GetCalendar: React.FC = () => {
       }
     },
   });
+  const topEight = api.twitch.getTopEight.useQuery(undefined, {
+    enabled: !!sessionData?.user,
+  });
   const calendar = api.twitch.getCalendar.useQuery(
-    { streamer_ids: following.data?.map((streamer) => streamer.id) ?? [] },
+    { streamer_ids: topEight.data?.map((streamer) => streamer.id) ?? [] },
     {
-      enabled: !!following.data?.some((streamer) => streamer.id),
+      enabled: !!topEight.data?.some((streamer) => streamer.id),
       refetchOnWindowFocus: false,
     }
   );
-  if (calendar?.data != undefined && !calendarStreamers.length) {
-    console.log(calendar.data);
-    setCalendarStreamers(calendar.data as twitch_calendar_response[]);
-  }
   if (!sessionData?.user) {
     return <></>;
   }
   return (
     <>
-      <MyCalendar events={calendarStreamers} />
+      <MyCalendar events={calendar?.data as twitch_calendar_response[]} />
       <button
         className="relative m-4 self-end rounded-full bg-white/10 p-4 px-6 font-bold text-white no-underline transition hover:bg-white/20"
         onClick={() => follow.mutate()}
       >
         Load streamers you follow
       </button>
+      <TopEight topEight={topEight?.data} />
       <Following streamers={following?.data} />
     </>
   );

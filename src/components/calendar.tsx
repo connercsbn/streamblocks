@@ -11,7 +11,7 @@ const localizer = momentLocalizer(moment);
 export default function MyCalendar(
   props: PropsWithChildren<{ events: twitch_calendar_response[] }>
 ) {
-  const events = props.events
+  const events = (props?.events ?? [])
     .flatMap((event) =>
       event?.data?.segments?.map((segment) => {
         return {

@@ -10,7 +10,7 @@ const opts = {
   },
 };
 
-const users: Map<string, z.infer<typeof TwitchUserSchema>> = new Map();
+// const users: Map<string, z.infer<typeof TwitchUserSchema>> = new Map();
 
 const TwitchUserSchema = z.object({
   data: z
@@ -83,7 +83,7 @@ const follow_fetch = async (id: string): Promise<twitch_follow_response> => {
   console.log(`param for follow_fetch: ${id}`);
   const res = (
     await fetch(
-      `https://api.twitch.tv/helix/users/follows?from_id=${id}&first=10`,
+      `https://api.twitch.tv/helix/users/follows?from_id=${id}&first=100`,
       opts
     )
   ).json();
@@ -145,6 +145,18 @@ export const twitchRouter = createTRPCRouter({
       );
       return streamerCalendars;
     }),
+  getTopEight: protectedProcedure.query(async ({ ctx }) => {
+    return (
+      await ctx.prisma.user.findUnique({
+        where: {
+          id: ctx.session.user.id,
+        },
+        include: {
+          topEight: true,
+        },
+      })
+    )?.topEight;
+  }),
   getFollowing: protectedProcedure.query(async ({ ctx }) => {
     return (
       await ctx.prisma.user.findUnique({
@@ -157,7 +169,25 @@ export const twitchRouter = createTRPCRouter({
       })
     )?.streamers;
   }),
-
+  reformatTopEight: protectedProcedure
+    .input(z.object({ streamer_ids: z.array(z.string()) }))
+    .mutation(async ({ ctx, input }) => {
+      const usersToAdd = await ctx.prisma.streamer.findMany({
+        where: {
+          id: {
+            in: input.streamer_ids,
+          },
+        },
+      });
+      await ctx.prisma.user.update({
+        where: { id: ctx.session.user.id },
+        data: {
+          topEight: {
+            connect: usersToAdd,
+          },
+        },
+      });
+    }),
   addToTopEight: protectedProcedure
     .input(z.object({ streamer_id: z.string() }))
     .mutation(async ({ ctx, input }) => {

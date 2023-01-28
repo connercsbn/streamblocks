@@ -24,6 +24,7 @@
     "react-big-calendar": "^1.5.2",
     "react-calendar": "^4.0.0",
     "react-dom": "18.2.0",
+    "react-draggable": "^4.4.5",
     "superjson": "1.9.1",
     "zod": "^3.20.2"
   },
