@@ -5,7 +5,7 @@ import TopEight from "../components/topEight";
 import { api } from "../utils/api";
 import { useRef } from "react";
 import { type NextPage } from "next";
-import type { twitch_calendar_response } from "../server/api/routers/twitch";
+import { RouterOutputs, RouterInputs } from "../utils/api";
 
 const GetCalendar: React.FC = () => {
   const { data: sessionData } = useSession();
@@ -39,7 +39,7 @@ const GetCalendar: React.FC = () => {
   }
   return (
     <>
-      <MyCalendar events={calendar?.data as twitch_calendar_response[]} />
+      <MyCalendar events={calendar.data ?? []} />
       <button
         className="relative m-4 self-end rounded-full bg-white/10 p-4 px-6 font-bold text-white no-underline transition hover:bg-white/20"
         onClick={() => follow.mutate()}

@@ -2,36 +2,58 @@ import "react-calendar/dist/Calendar.css";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
 import { type PropsWithChildren } from "react";
-import "react-big-calendar/lib/css/react-big-calendar.css";
-import { type Event } from "react-big-calendar";
-import { type twitch_calendar_response } from "../server/api/routers/twitch";
+import type { Event } from "react-big-calendar";
+import { type RouterOutputs } from "../utils/api";
+import overlapfunction from "../utils/overlap";
 
 const localizer = momentLocalizer(moment);
 
-export default function MyCalendar(
-  props: PropsWithChildren<{ events: twitch_calendar_response[] }>
-) {
-  const events = (props?.events ?? [])
-    .flatMap((event) =>
-      event?.data?.segments?.map((segment) => {
+export default function MyCalendar({
+  events,
+}: PropsWithChildren<{ events: RouterOutputs["twitch"]["getCalendar"] }>) {
+  const things = events
+    .flatMap(({ calendar, streamer_name }) =>
+      calendar?.data?.segments?.map((segment) => {
         return {
           start: new Date(segment.start_time),
           end: new Date(segment.end_time),
-          title: segment.title,
+          title: streamer_name + (segment.title ? ": " + segment.title : ""),
         };
       })
     )
     .filter(Boolean) as Event[];
+  // for testing
+  // const things = [
+  //   {
+  //     start: new Date("January 29, 2023 15:46"),
+  //     end: new Date("January 29, 2023 19:46"),
+  //     title: "first",
+  //     something: "watever",
+  //   },
+  //   {
+  //     start: new Date("January 29, 2023 10:00"),
+  //     end: new Date("January 29, 2023 17:46"),
+  //     title: "second",
+  //     something: "watever",
+  //   },
+  //   {
+  //     start: new Date("January 29, 2023 10:00"),
+  //     end: new Date("January 29, 2023 17:46"),
+  //     title: "third",
+  //     something: "watever",
+  //   },
+  // ];
 
   return (
     <div className="w-full bg-white">
       <Calendar
         defaultView="week"
         localizer={localizer}
-        events={events}
+        events={things.reverse()}
         startAccessor="start"
         endAccessor="end"
         style={{ height: 800 }}
+        dayLayoutAlgorithm={overlapfunction}
       />
     </div>
   );

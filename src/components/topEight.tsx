@@ -19,36 +19,24 @@ export const TopEight: React.FC<{ topEight?: Streamer[] }> = ({ topEight }) => {
       </p>
       <div className="mb-4">
         {topEight.map((streamer, key) => (
-          <Draggable
+          <div
             key={key}
-            axis="y"
-            onStart={(e, data) => {
-              console.log(e);
-              console.log(data);
-            }}
-            onStop={(e, data) => {
-              console.log(e);
-              console.log(data);
-            }}
+            className={
+              "block cursor-default pt-1 text-2xl font-bold text-white hover:text-white"
+            }
           >
-            <div
-              className={
-                "block cursor-default pt-1 text-2xl font-bold text-white hover:text-white"
-              }
-            >
-              <div className="flex align-middle">
-                <div className="relative mr-2 h-full self-center">
-                  <Image
-                    alt=""
-                    src={streamer.image_url}
-                    height={30}
-                    width={30}
-                  ></Image>
-                </div>
-                <div className="">{streamer.display_name}</div>
+            <div className="flex align-middle">
+              <div className="relative mr-2 h-full self-center">
+                <Image
+                  alt=""
+                  src={streamer.image_url}
+                  height={30}
+                  width={30}
+                ></Image>
               </div>
+              <div className="">{streamer.display_name}</div>
             </div>
-          </Draggable>
+          </div>
         ))}
       </div>
     </>

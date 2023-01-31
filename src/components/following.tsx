@@ -25,14 +25,14 @@ export const Following: React.FC<{
   return (
     <>
       <p className="text-2xl font-extrabold  text-white underline">
-        You are following (limited to 10 for the time being):
+        You are following:
       </p>
       <div className="my-2">
         {streamers?.length ? (
           streamers.map((streamer, key) => (
             <div
               className={
-                "block pt-1 text-2xl font-bold text-white hover:text-white"
+                "block cursor-default pt-1 text-2xl font-bold text-white hover:text-white"
               }
               key={key}
             >

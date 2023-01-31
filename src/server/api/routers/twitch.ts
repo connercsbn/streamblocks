@@ -121,12 +121,17 @@ export const twitchRouter = createTRPCRouter({
   getCalendar: protectedProcedure
     .input(z.object({ streamer_ids: z.array(z.string()) }))
     .query(async ({ input: { streamer_ids }, ctx }) => {
-      const streamersWithoutCalendars = [] as string[];
-      const streamerCalendars = [] as (twitch_calendar_response | undefined)[];
+      const streamersWithoutCalendars: string[] = [];
+      const streamerCalendars: [string, twitch_calendar_response][] = [];
       for (const streamer_id of streamer_ids) {
         const tempCal = await calendar_fetch(streamer_id);
         if (tempCal?.data?.segments) {
-          streamerCalendars.push(tempCal);
+          const streamer_name = (
+            await ctx.prisma.streamer.findUniqueOrThrow({
+              where: { id: streamer_id },
+            })
+          ).display_name;
+          streamerCalendars.push([streamer_name, tempCal]);
         } else {
           streamersWithoutCalendars.push(streamer_id);
         }
@@ -143,7 +148,12 @@ export const twitchRouter = createTRPCRouter({
           })
         ).map((streamer) => streamer.display_name)
       );
-      return streamerCalendars;
+      return streamerCalendars.map(([streamer_name, calendar]) => {
+        return {
+          streamer_name,
+          calendar,
+        };
+      });
     }),
   getTopEight: protectedProcedure.query(async ({ ctx }) => {
     return (
