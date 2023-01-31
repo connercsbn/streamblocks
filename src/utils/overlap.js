@@ -1,28 +1,18 @@
 "use strict";
 
-var _interopRequireDefault =
-  require("@babel/runtime/helpers/interopRequireDefault").default;
-
 Object.defineProperty(exports, "__esModule", {
   value: true,
 });
-exports.default = getStyledEvents;
 
-var _classCallCheck2 = _interopRequireDefault(
-  require("@babel/runtime/helpers/classCallCheck")
-);
-
-var _createClass2 = _interopRequireDefault(
-  require("@babel/runtime/helpers/createClass")
-);
-
-var _sortBy = _interopRequireDefault(require("lodash/sortBy"));
+import _classCallCheck2 from "@babel/runtime/helpers/classCallCheck";
+import _createClass2 from "@babel/runtime/helpers/createClass";
+import _sortBy from "lodash/sortBy";
 
 var Event = /*#__PURE__*/ (function () {
   function Event(data, _ref) {
     var accessors = _ref.accessors,
       slotMetrics = _ref.slotMetrics;
-    (0, _classCallCheck2.default)(this, Event);
+    (0, _classCallCheck2)(this, Event);
 
     var _slotMetrics$getRange = slotMetrics.getRange(
         accessors.start(data),
@@ -47,7 +37,7 @@ var Event = /*#__PURE__*/ (function () {
    * The event's width without any overlap.
    */
 
-  (0, _createClass2.default)(Event, [
+  (0, _createClass2)(Event, [
     {
       key: "_width",
       get: function get() {
@@ -130,7 +120,7 @@ function onSameRow(a, b, minimumStartDifference) {
 }
 
 function sortByRender(events) {
-  var sortedByTime = (0, _sortBy.default)(events, [
+  var sortedByTime = (0, _sortBy)(events, [
     "startMs",
     function (e) {
       return -e.endMs;
@@ -239,3 +229,5 @@ function getStyledEvents(_ref2) {
     };
   });
 }
+
+export default getStyledEvents;
