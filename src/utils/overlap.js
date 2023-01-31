@@ -152,7 +152,7 @@ function sortByRender(events) {
   // return sorted;
 }
 
-function getStyledEvents(_ref2) {
+function getStyledEvents(_ref2, overlapMode) {
   var events = _ref2.events,
     minimumStartDifference = _ref2.minimumStartDifference,
     slotMetrics = _ref2.slotMetrics,
@@ -214,6 +214,19 @@ function getStyledEvents(_ref2) {
 
     if (_ret === "continue") continue;
   } // Return the original events, along with their styles.
+  if (overlapMode) {
+    return eventsInRenderOrder.map(function (event) {
+      return {
+        event: event.data,
+        style: {
+          top: event.top,
+          height: event.height,
+          width: event.width,
+          xOffset: Math.max(0, event.xOffset),
+        },
+      };
+    });
+  }
 
   return eventsInRenderOrder.map(function (event) {
     return {
@@ -221,8 +234,8 @@ function getStyledEvents(_ref2) {
       style: {
         top: event.top,
         height: event.height,
-        width: "100%" ?? event.width,
-        xOffset: "0" ?? Math.max(0, event.xOffset),
+        width: "100%",
+        xOffset: "0",
       },
     };
   });

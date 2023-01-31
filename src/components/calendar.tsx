@@ -5,6 +5,9 @@ import { type PropsWithChildren } from "react";
 import type { Event } from "react-big-calendar";
 import { type RouterOutputs } from "../utils/api";
 import overlapfunction from "../utils/overlap";
+import nooverlapfunction from "../utils/nooverlap";
+import { useState } from "react";
+import { ChangeEvent } from "react";
 
 const localizer = momentLocalizer(moment);
 
@@ -31,6 +34,12 @@ const streamerColorMap = [
 export default function MyCalendar({
   events,
 }: PropsWithChildren<{ events: RouterOutputs["twitch"]["getCalendar"] }>) {
+  const [wantsOverlap, setWantsOverlap] = useState<boolean>(false);
+
+  const handleOverlapChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setWantsOverlap(e.target.checked);
+  };
+
   const things = events
     .map(({ calendar, streamer_name }, number) => {
       return calendar?.data?.segments?.map(
@@ -75,6 +84,16 @@ export default function MyCalendar({
 
   return (
     <div className="w-full bg-white">
+      <div className="flex items-center  bg-blue-800 text-center">
+        <input
+          className="m-7 h-6 w-6 p-7"
+          onChange={(e) => handleOverlapChange(e)}
+          type="checkbox"
+        />
+        <span className="text-center align-middle text-white">
+          Switch overlap mode (for testing)
+        </span>
+      </div>
       <Calendar
         defaultView="week"
         localizer={localizer}
@@ -82,7 +101,7 @@ export default function MyCalendar({
         startAccessor="start"
         endAccessor="end"
         style={{ height: 800 }}
-        dayLayoutAlgorithm={overlapfunction}
+        dayLayoutAlgorithm={wantsOverlap ? overlapfunction : nooverlapfunction}
         eventPropGetter={(event) => {
           return {
             className: `${
