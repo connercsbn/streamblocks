@@ -12,6 +12,30 @@ const opts = {
 
 // const users: Map<string, z.infer<typeof TwitchUserSchema>> = new Map();
 
+const TwitchLiveSchema = z.object({
+  data: z.array(
+    z.object({
+      id: z.string(),
+      user_id: z.string(),
+      user_login: z.string(),
+      user_name: z.string(),
+      game_id: z.string(),
+      game_name: z.string(),
+      type: z.string(),
+      title: z.string(),
+      viewer_count: z.number(),
+      started_at: z.string(),
+      language: z.string(),
+      thumbnail_url: z.string(),
+      tag_ids: z.array(z.string()),
+      tags: z.array(z.string()),
+      is_mature: z.boolean(),
+    })
+  ),
+  pagination: z.object({ cursor: z.string() }),
+});
+export type twitch_live_response = z.infer<typeof TwitchLiveSchema>;
+
 const TwitchUserSchema = z.object({
   data: z
     .array(
@@ -78,6 +102,15 @@ export type twitch_calendar_response = z.infer<typeof TwitchCalendarSchema>;
 export type twitch_calendar_error = z.inferFormattedError<
   typeof TwitchCalendarSchema
 >;
+
+const live_fetch = async (id: string): Promise<twitch_live_response> => {
+  console.log(`param for live_fetch: ${id}`);
+  const res = (
+    await fetch(`https://api.twitch.tv/helix/streams?user_id=${id}`, opts)
+  ).json();
+  console.log(await res);
+  return TwitchLiveSchema.parse(await res);
+};
 
 const follow_fetch = async (id: string): Promise<twitch_follow_response> => {
   console.log(`param for follow_fetch: ${id}`);

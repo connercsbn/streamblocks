@@ -277,7 +277,8 @@ button.rbc-input::-moz-focus-inner {
 }
 .rbc-event.rbc-selected,
 .rbc-day-slot .rbc-selected.rbc-background-event {
-  background-color: #265985;
+  /* background-color: #265985; */
+  z-index: 1;
 }
 .rbc-event:focus,
 .rbc-day-slot .rbc-background-event:focus {

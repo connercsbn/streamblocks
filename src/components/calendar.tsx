@@ -7,7 +7,7 @@ import { type RouterOutputs } from "../utils/api";
 import overlapfunction from "../utils/overlap";
 import nooverlapfunction from "../utils/nooverlap";
 import { useState } from "react";
-import { ChangeEvent } from "react";
+import { type ChangeEvent } from "react";
 
 const localizer = momentLocalizer(moment);
 
@@ -55,32 +55,10 @@ export default function MyCalendar({
       );
     })
     .flat()
-    .filter((x) => x) as (Event & {
+    .filter(Boolean) as (Event & {
     streamer: string;
     streamerOrder: number;
   })[];
-
-  // for testing
-  // const things = [
-  //   {
-  //     start: new Date("January 29, 2023 15:46"),
-  //     end: new Date("January 29, 2023 19:46"),
-  //     title: "first",
-  //     something: "watever",
-  //   },
-  //   {
-  //     start: new Date("January 29, 2023 10:00"),
-  //     end: new Date("January 29, 2023 17:46"),
-  //     title: "second",
-  //     something: "watever",
-  //   },
-  //   {
-  //     start: new Date("January 29, 2023 10:00"),
-  //     end: new Date("January 29, 2023 17:46"),
-  //     title: "third",
-  //     something: "watever",
-  //   },
-  // ];
 
   return (
     <div className="w-full bg-white">
@@ -100,13 +78,13 @@ export default function MyCalendar({
         events={things.reverse()}
         startAccessor="start"
         endAccessor="end"
-        style={{ height: 800 }}
+        style={{ height: 1100 }}
         dayLayoutAlgorithm={wantsOverlap ? overlapfunction : nooverlapfunction}
         eventPropGetter={(event) => {
           return {
             className: `${
               streamerColorMap.at(event.streamerOrder) ?? ""
-            } border-2 rounded-md border-solid text-black`,
+            } border-2 rounded-md border-solid text-black shadow-lg`,
           };
         }}
         className=""
@@ -114,40 +92,26 @@ export default function MyCalendar({
     </div>
   );
 }
-// import FullCalendar from "@fullcalendar/react";
-// import dayGridPlugin from "@fullcalendar/daygrid";
 
-// const events = [{ title: "Meeting", start: new Date() }];
-
-// export default function Calendar() {
-//   return (
-//     <div className="w-full">
-//       <h1 className="text-3xl text-white">Calendar</h1>
-//       <FullCalendar
-//         plugins={[dayGridPlugin]}
-//         initialView="dayGridWeek"
-//         eventTextColor="#ff0000"
-//         eventBorderColor="red"
-//         eventColor="yellow"
-//         eventBackgroundColor="gray"
-//         weekends={true}
-//         events={events}
-//         eventContent={renderEventContent}
-
-//       />
-//     </div>
-//   );
-// }
-
-// // a custom render function
-// function renderEventContent(eventInfo: {
-//   timeText: string;
-//   event: { title: string };
-// }) {
-//   return (
-//     <>
-//       <b>{eventInfo.timeText}</b>
-//       <i>{eventInfo.event.title}</i>
-//     </>
-//   );
-// }
+// --------------------------------------
+// for testing
+// const things = [
+//   {
+//     start: new Date("January 29, 2023 15:46"),
+//     end: new Date("January 29, 2023 19:46"),
+//     title: "first",
+//     something: "watever",
+//   },
+//   {
+//     start: new Date("January 29, 2023 10:00"),
+//     end: new Date("January 29, 2023 17:46"),
+//     title: "second",
+//     something: "watever",
+//   },
+//   {
+//     start: new Date("January 29, 2023 10:00"),
+//     end: new Date("January 29, 2023 17:46"),
+//     title: "third",
+//     something: "watever",
+//   },
+// ];
