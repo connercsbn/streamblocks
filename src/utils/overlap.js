@@ -168,8 +168,6 @@ function getStyledEvents(_ref2) {
   var eventsInRenderOrder = sortByRender(proxies); // Group overlapping events, while keeping order.
   // Every event is always one of: container, row or leaf.
   // Containers can contain rows, and rows can contain leaves.
-  console.log("proxies, ", proxies);
-  console.log("eventsInRenderOrder, ", eventsInRenderOrder);
 
   var containerEvents = [];
 
