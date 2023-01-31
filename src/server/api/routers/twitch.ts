@@ -13,26 +13,30 @@ const opts = {
 // const users: Map<string, z.infer<typeof TwitchUserSchema>> = new Map();
 
 const TwitchLiveSchema = z.object({
-  data: z.array(
-    z.object({
-      id: z.string(),
-      user_id: z.string(),
-      user_login: z.string(),
-      user_name: z.string(),
-      game_id: z.string(),
-      game_name: z.string(),
-      type: z.string(),
-      title: z.string(),
-      viewer_count: z.number(),
-      started_at: z.string(),
-      language: z.string(),
-      thumbnail_url: z.string(),
-      tag_ids: z.array(z.string()),
-      tags: z.array(z.string()),
-      is_mature: z.boolean(),
-    })
-  ),
-  pagination: z.object({ cursor: z.string() }),
+  data: z
+    .array(
+      z
+        .object({
+          id: z.string().optional(),
+          user_id: z.string().optional(),
+          user_login: z.string().optional(),
+          user_name: z.string().optional(),
+          game_id: z.string().optional(),
+          game_name: z.string().optional(),
+          type: z.string().optional(),
+          title: z.string().optional(),
+          viewer_count: z.number().optional(),
+          started_at: z.string().optional(),
+          language: z.string().optional(),
+          thumbnail_url: z.string().optional(),
+          tag_ids: z.array(z.string()).optional(),
+          tags: z.array(z.string()).optional(),
+          is_mature: z.boolean().optional(),
+        })
+        .optional()
+    )
+    .optional(),
+  pagination: z.object({ cursor: z.string().optional() }).optional(),
 });
 export type twitch_live_response = z.infer<typeof TwitchLiveSchema>;
 
@@ -151,6 +155,12 @@ const user_fetch = async (param: string): Promise<twitch_user> => {
 };
 
 export const twitchRouter = createTRPCRouter({
+  getLiveStatus: protectedProcedure
+    .input(z.object({ streamer_ids: z.array(z.string()) }))
+    .query(async ({ input: { streamer_ids }, ctx }) => {
+      const schedules = streamer_ids.map(live_fetch);
+      return await Promise.all(schedules);
+    }),
   getCalendar: protectedProcedure
     .input(z.object({ streamer_ids: z.array(z.string()) }))
     .query(async ({ input: { streamer_ids }, ctx }) => {

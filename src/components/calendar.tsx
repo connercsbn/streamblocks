@@ -33,9 +33,13 @@ const streamerColorMap = [
 
 export default function MyCalendar({
   events,
-}: PropsWithChildren<{ events: RouterOutputs["twitch"]["getCalendar"] }>) {
+  liveStatuses,
+}: PropsWithChildren<{
+  events: RouterOutputs["twitch"]["getCalendar"];
+  liveStatuses: RouterOutputs["twitch"]["getLiveStatus"];
+}>) {
   const [wantsOverlap, setWantsOverlap] = useState<boolean>(false);
-
+  console.log("liveStatuses", liveStatuses);
   const handleOverlapChange = (e: ChangeEvent<HTMLInputElement>) => {
     setWantsOverlap(e.target.checked);
   };
@@ -61,35 +65,39 @@ export default function MyCalendar({
   })[];
 
   return (
-    <div className="w-full bg-white">
-      <div className="flex items-center  bg-blue-800 text-center">
-        <input
-          className="m-7 h-6 w-6 p-7"
-          onChange={(e) => handleOverlapChange(e)}
-          type="checkbox"
+    <>
+      <div className="w-full bg-white">
+        <div className="flex items-center  bg-blue-800 text-center">
+          <input
+            className="m-7 h-6 w-6 p-7"
+            onChange={(e) => handleOverlapChange(e)}
+            type="checkbox"
+          />
+          <span className="text-center align-middle text-white">
+            Switch overlap mode (for testing)
+          </span>
+        </div>
+        <Calendar
+          defaultView="week"
+          localizer={localizer}
+          events={things.reverse()}
+          startAccessor="start"
+          endAccessor="end"
+          style={{ height: 1100 }}
+          dayLayoutAlgorithm={
+            wantsOverlap ? overlapfunction : nooverlapfunction
+          }
+          eventPropGetter={(event) => {
+            return {
+              className: `${
+                streamerColorMap.at(event.streamerOrder) ?? ""
+              } border-2 rounded-md border-solid text-black shadow-lg`,
+            };
+          }}
+          className=""
         />
-        <span className="text-center align-middle text-white">
-          Switch overlap mode (for testing)
-        </span>
       </div>
-      <Calendar
-        defaultView="week"
-        localizer={localizer}
-        events={things.reverse()}
-        startAccessor="start"
-        endAccessor="end"
-        style={{ height: 1100 }}
-        dayLayoutAlgorithm={wantsOverlap ? overlapfunction : nooverlapfunction}
-        eventPropGetter={(event) => {
-          return {
-            className: `${
-              streamerColorMap.at(event.streamerOrder) ?? ""
-            } border-2 rounded-md border-solid text-black shadow-lg`,
-          };
-        }}
-        className=""
-      />
-    </div>
+    </>
   );
 }
 
