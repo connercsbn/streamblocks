@@ -1,7 +1,5 @@
-import { useState } from "react";
-import { useSession } from "next-auth/react";
 import { api } from "../utils/api";
-import { ItemInterface, ReactSortable, Sortable } from "react-sortablejs";
+import { ReactSortable } from "react-sortablejs";
 
 export default function Test() {
   return <BasicFunction />;
@@ -46,15 +44,16 @@ export const BasicFunction: React.FC = () => {
   if (!stuff.data) return <></>;
   return (
     <ReactSortable
+      revertOnSpill={false}
       group="groupName"
-      animation={100}
-      swapThreshold={0.5}
+      animation={70}
+      swapThreshold={0.7}
       list={stuff.data}
       setList={handleStuffMutate}
       ghostClass="opacity-0"
     >
       {stuff.data.map((item) => (
-        <div className=" cursor-grab bg-white p-5" key={item.id}>
+        <div className="m-2 cursor-grab bg-white p-3" key={item.id}>
           {item.item}
         </div>
       ))}
