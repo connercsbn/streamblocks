@@ -279,7 +279,13 @@ export const twitchRouter = createTRPCRouter({
       // re add top eight ids in the right order -- hopefully
       await ctx.prisma.user.update({
         where: { id: ctx.session.user.id },
-        data: { topEight: { connect: usersToAdd } },
+        data: {
+          topEight: {
+            connect: usersToAdd.map((streamer) => {
+              return { id: streamer.id };
+            }),
+          },
+        },
       });
     }),
   addToTopEight: protectedProcedure

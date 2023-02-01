@@ -16,8 +16,13 @@ export const Following: React.FC<{
       );
       await apiContext.twitch.getTopEight.cancel();
       const previousTopEight = apiContext.twitch.getTopEight.getData();
+      const highestId = Math.max(
+        ...(previousTopEight?.map((streamer) => streamer.id) ?? [0])
+      );
       apiContext.twitch.getTopEight.setData(undefined, (data) =>
-        data && newStreamer ? [...data, newStreamer] : data
+        data && newStreamer
+          ? [...data, { id: highestId + 1, streamer: newStreamer }]
+          : data
       );
       return { previousTopEight };
     },
