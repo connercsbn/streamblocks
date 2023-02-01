@@ -235,7 +235,12 @@ export const twitchRouter = createTRPCRouter({
           topEight: true,
         },
       })
-    )?.topEight;
+    )?.topEight.map((streamer, index) => {
+      return {
+        id: index,
+        streamer,
+      };
+    });
   }),
   getFollowing: protectedProcedure.query(async ({ ctx }) => {
     return (
@@ -253,19 +258,28 @@ export const twitchRouter = createTRPCRouter({
     .input(z.object({ streamer_ids: z.array(z.string()) }))
     .mutation(async ({ ctx, input }) => {
       const usersToAdd = await ctx.prisma.streamer.findMany({
-        where: {
-          id: {
-            in: input.streamer_ids,
-          },
-        },
+        where: { id: { in: input.streamer_ids } },
       });
+      // get top eight ids
+      const allTopEightIds = (
+        await ctx.prisma.user.findUnique({
+          where: { id: ctx.session.user.id },
+          include: {
+            topEight: true,
+          },
+        })
+      )?.topEight.map((streamer) => {
+        return { id: streamer.id };
+      });
+      // disconnect all top eight ids
       await ctx.prisma.user.update({
         where: { id: ctx.session.user.id },
-        data: {
-          topEight: {
-            connect: usersToAdd,
-          },
-        },
+        data: { topEight: { disconnect: allTopEightIds } },
+      });
+      // re add top eight ids in the right order -- hopefully
+      await ctx.prisma.user.update({
+        where: { id: ctx.session.user.id },
+        data: { topEight: { connect: usersToAdd } },
       });
     }),
   addToTopEight: protectedProcedure

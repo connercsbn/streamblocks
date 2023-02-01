@@ -39,7 +39,6 @@ export default function MyCalendar({
   liveStatuses: RouterOutputs["twitch"]["getLiveStatus"];
 }>) {
   const [wantsOverlap, setWantsOverlap] = useState<boolean>(false);
-  console.log("liveStatuses", liveStatuses);
   const handleOverlapChange = (e: ChangeEvent<HTMLInputElement>) => {
     setWantsOverlap(e.target.checked);
   };
@@ -83,7 +82,7 @@ export default function MyCalendar({
           events={things.reverse()}
           startAccessor="start"
           endAccessor="end"
-          style={{ height: 1100 }}
+          style={{ height: 800 }}
           dayLayoutAlgorithm={
             wantsOverlap ? overlapfunction : nooverlapfunction
           }

@@ -28,17 +28,25 @@ const GetCalendar: React.FC = () => {
   });
 
   const liveStatuses = api.twitch.getLiveStatus.useQuery(
-    { streamer_ids: topEight.data?.map((streamer) => streamer.id) ?? [] },
     {
-      enabled: !!topEight.data?.some((streamer) => streamer.id),
+      streamer_ids:
+        topEight.data
+          ?.map((streamer) => streamer?.streamer?.id)
+          .filter(Boolean) ?? [],
+    },
+    {
+      enabled: !!topEight.data?.some((streamer) => streamer?.streamer?.id),
       refetchOnWindowFocus: false,
     }
   );
 
   const calendar = api.twitch.getCalendar.useQuery(
-    { streamer_ids: topEight.data?.map((streamer) => streamer.id) ?? [] },
     {
-      enabled: !!topEight.data?.some((streamer) => streamer.id),
+      streamer_ids:
+        topEight.data?.map((streamer) => streamer?.streamer?.id) ?? [],
+    },
+    {
+      enabled: !!topEight.data?.some((streamer) => streamer?.streamer?.id),
       refetchOnWindowFocus: false,
     }
   );
