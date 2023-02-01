@@ -4,7 +4,7 @@ import { signIn, signOut, useSession } from "next-auth/react";
 
 const links = [
   { link: "/", name: "Home" },
-  { link: "streaming-now", name: "Streaming Now" },
+  { link: "/test", name: "Test" },
 ];
 
 export default function Nav() {

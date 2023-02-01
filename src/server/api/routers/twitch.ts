@@ -1,3 +1,4 @@
+import { publicProcedure } from "./../trpc";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "../trpc";
@@ -153,8 +154,34 @@ const user_fetch = async (param: string): Promise<twitch_user> => {
   ).json();
   return TwitchUserSchema.parse(await res);
 };
+let stuff = [
+  "first item",
+  "second item",
+  "third item",
+  "fourth item",
+  "fifth item",
+  "sixth item",
+  "seventh item",
+  "eight item",
+];
 
 export const twitchRouter = createTRPCRouter({
+  getTest: publicProcedure.query(() => {
+    return stuff.map((thing, id) => {
+      return { item: thing, id };
+    });
+  }),
+  mutTest: publicProcedure
+    .input(
+      z.object({
+        stuff: z.array(z.string()),
+      })
+    )
+    .mutation(({ input }) => {
+      console.log(stuff);
+      stuff = input.stuff;
+      console.log(stuff);
+    }),
   getLiveStatus: protectedProcedure
     .input(z.object({ streamer_ids: z.array(z.string()) }))
     .query(async ({ input: { streamer_ids }, ctx }) => {
