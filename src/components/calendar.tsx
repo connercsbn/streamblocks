@@ -67,26 +67,14 @@ export default function MyCalendar({
   return (
     <>
       <div className="w-full bg-white">
-        <div className="flex items-center  bg-blue-800 text-center">
-          <input
-            className="m-7 h-6 w-6 p-7"
-            onChange={(e) => handleOverlapChange(e)}
-            type="checkbox"
-          />
-          <span className="text-center align-middle text-white">
-            Switch overlap mode (for testing)
-          </span>
-        </div>
         <Calendar
           defaultView="week"
           localizer={localizer}
           events={things.reverse()}
           startAccessor="start"
           endAccessor="end"
-          style={{ height: 1100 }}
-          dayLayoutAlgorithm={
-            wantsOverlap ? overlapfunction : nooverlapfunction
-          }
+          style={{ height: window?.innerHeight - 56 }}
+          dayLayoutAlgorithm={overlapfunction}
           eventPropGetter={(event) => {
             return {
               className: `${
@@ -100,26 +88,3 @@ export default function MyCalendar({
     </>
   );
 }
-
-// --------------------------------------
-// for testing
-// const things = [
-//   {
-//     start: new Date("January 29, 2023 15:46"),
-//     end: new Date("January 29, 2023 19:46"),
-//     title: "first",
-//     something: "watever",
-//   },
-//   {
-//     start: new Date("January 29, 2023 10:00"),
-//     end: new Date("January 29, 2023 17:46"),
-//     title: "second",
-//     something: "watever",
-//   },
-//   {
-//     start: new Date("January 29, 2023 10:00"),
-//     end: new Date("January 29, 2023 17:46"),
-//     title: "third",
-//     something: "watever",
-//   },
-// ];

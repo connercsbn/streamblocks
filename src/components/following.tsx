@@ -1,69 +1,73 @@
 import type { Streamer } from "@prisma/client";
 import Image from "next/image";
 import { api } from "../utils/api";
+import StreamerInList from "./streamerInList";
+import type { ChangeEvent } from "react";
+import { useState } from "react";
 
 export const Following: React.FC<{
+  handleAddStreamer: (streamer_id: string) => void;
   streamers?: Streamer[];
-}> = ({ streamers }) => {
+}> = ({ streamers, handleAddStreamer }) => {
   const apiContext = api.useContext();
-  const addTopEight = api.twitch.addToTopEight.useMutation({
-    onSuccess: async () => {
-      await apiContext.twitch.getTopEight.invalidate();
-    },
-    onMutate: async ({ streamer_id }) => {
-      const newStreamer = streamers?.find(
-        (streamer) => streamer.id === streamer_id
-      );
-      await apiContext.twitch.getTopEight.cancel();
-      const previousTopEight = apiContext.twitch.getTopEight.getData();
-      apiContext.twitch.getTopEight.setData(undefined, (data) =>
-        data && newStreamer ? [...data, newStreamer] : data
-      );
-      return { previousTopEight };
-    },
-  });
+  const [searchInput, setSearchInput] = useState("");
+
+  const handleInput = (e: ChangeEvent<HTMLInputElement>) => {
+    setSearchInput(e.currentTarget.value);
+  };
+
+  const searchFilter = (streamer: Streamer) => {
+    return streamer.display_name
+      .toLowerCase()
+      .includes(searchInput.toLowerCase());
+  };
   return (
     <>
-      <p className="text-2xl font-extrabold  text-white underline">
-        You are following:
-      </p>
+      <label
+        htmlFor="default-search"
+        className="sr-only mb-2 text-sm font-medium text-gray-900 dark:text-white"
+      >
+        Search
+      </label>
+      <div className="relative">
+        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+          <svg
+            aria-hidden="true"
+            className="h-5 w-5 text-gray-500 dark:text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            ></path>
+          </svg>
+        </div>
+        <input
+          value={searchInput}
+          onChange={handleInput}
+          type="search"
+          id="default-search"
+          className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2 pl-10 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+          placeholder="Search"
+          required
+        />
+      </div>
       <div className="my-2">
-        {streamers?.length ? (
-          streamers.map((streamer, key) => (
-            <div
-              className={
-                "block cursor-default pt-1 text-2xl font-bold text-white hover:text-white"
-              }
-              key={key}
-            >
-              <div className="flex align-middle">
-                <div className="relative mr-2 h-full self-center">
-                  <Image
-                    alt=""
-                    src={streamer.image_url}
-                    height={30}
-                    width={30}
-                  ></Image>
-                </div>
-                <div className="">
-                  <span>{streamer.display_name}</span>
-                  <span className="mx-5">
-                    <button
-                      onClick={() =>
-                        void addTopEight.mutate({ streamer_id: streamer.id })
-                      }
-                      className="relative self-end rounded-full bg-white/10 p-1 px-2 text-sm font-bold text-white no-underline transition hover:bg-white/20"
-                    >
-                      Add to top 8
-                    </button>
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))
-        ) : (
-          <div className="font-bold text-white">no one</div>
-        )}
+        {!!streamers?.length &&
+          streamers
+            .filter(searchFilter)
+            .map((streamer, key) => (
+              <StreamerInList
+                streamer={streamer}
+                key={key}
+                handleAddStreamer={handleAddStreamer}
+              />
+            ))}
       </div>
     </>
   );
