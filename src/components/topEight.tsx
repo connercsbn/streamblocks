@@ -2,7 +2,9 @@ import type { Streamer } from "@prisma/client";
 import Image from "next/image";
 import Draggable from "react-draggable";
 import StreamerInList from "./streamerInList";
-export const TopEight: React.FC<{ topEight?: Streamer[] }> = ({ topEight }) => {
+export const TopEight: React.FC<{
+  topEight?: Streamer[];
+}> = ({ topEight }) => {
   if (!topEight?.length) {
     return <></>;
   }

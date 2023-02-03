@@ -3,6 +3,7 @@ import TopEight from "../components/topEight";
 import { type RouterOutputs, api } from "../utils/api";
 import { useEffect } from "react";
 import { useState } from "react";
+import type { Streamer } from "@prisma/client";
 
 const Sidebar: React.FC<{
   topEight: RouterOutputs["twitch"]["getTopEight"];

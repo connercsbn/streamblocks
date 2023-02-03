@@ -1,8 +1,6 @@
 import { type PropsWithChildren } from "react";
 import Image from "next/image";
 import type { Streamer } from "@prisma/client";
-import { useSession } from "next-auth/react";
-import { api } from "../utils/api";
 import { useState } from "react";
 
 export default function Streamer({
@@ -21,13 +19,14 @@ export default function Streamer({
       onMouseLeave={() => setIsHovering(false)}
       className="relative flex py-1 align-middle text-white"
     >
-      <div className="relative mr-2 h-full self-center">
-        <Image alt="" src={streamer.image_url} height={30} width={30}></Image>
+      <div className="relative mr-2 h-full self-center overflow-hidden rounded-full">
+        <Image alt="" src={streamer.image_url} height={30} width={30} />
       </div>
       <div className="">
         <span>{streamer.display_name}</span>
       </div>
       <div className="absolute right-0">
+        {top && <input type="checkbox" />}
         {!top && handleAddStreamer && isHovering && (
           <span className="relative ml-2">
             <button
