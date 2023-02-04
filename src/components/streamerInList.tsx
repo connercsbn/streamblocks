@@ -34,19 +34,23 @@ export default function Streamer({
       >
         <Image alt="" src={streamer.image_url} height={30} width={30} />
       </div>
-      {size === "full" && <div>{streamer.display_name}</div>}
+      {size === "full" && (
+        <div className="self-center">{streamer.display_name}</div>
+      )}
       <div className="absolute right-4">
         {!top && handleAddStreamer && isHovering && size === "full" && (
-          <span className="relative ml-2">
+          <span className="relative top-0.5 ml-2">
             <MyButton onClick={() => handleAddStreamer(streamer.id)}>
               <PlusButton />
             </MyButton>
           </span>
         )}
         {top && handleRemoveStreamer && isHovering && size === "full" && (
-          <MyButton onClick={() => handleRemoveStreamer(streamer.id)}>
-            <MinusButton />
-          </MyButton>
+          <span className="relative top-0.5 ml-2">
+            <MyButton onClick={() => handleRemoveStreamer(streamer.id)}>
+              <MinusButton />
+            </MyButton>
+          </span>
         )}
       </div>
     </div>

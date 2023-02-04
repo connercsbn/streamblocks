@@ -65,7 +65,7 @@ const Sidebar: React.FC<{
     <>
       <div
         style={height ? { height: height - 56 } : {}}
-        className={`${open ? "w-96" : "w-16"} overflow-scroll bg-slate-900`}
+        className={`${open ? "w-80" : "w-16"} overflow-scroll bg-slate-900`}
       >
         <div className={`${open ? "" : "flex flex-col items-center"}`}>
           <div
