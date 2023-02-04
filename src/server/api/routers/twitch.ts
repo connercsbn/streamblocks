@@ -255,6 +255,33 @@ export const twitchRouter = createTRPCRouter({
               id: input.streamer_id,
             },
           },
+          streamers: {
+            disconnect: {
+              id: input.streamer_id,
+            },
+          },
+        },
+      });
+    }),
+  removeFromTopEight: protectedProcedure
+    .input(z.object({ streamer_id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+      await ctx.prisma.user.update({
+        where: {
+          id: userId,
+        },
+        data: {
+          topEight: {
+            disconnect: {
+              id: input.streamer_id,
+            },
+          },
+          streamers: {
+            connect: {
+              id: input.streamer_id,
+            },
+          },
         },
       });
     }),

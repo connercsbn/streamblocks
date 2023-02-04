@@ -68,10 +68,10 @@ model Streamer {
   display_name       String
   image_url          String
   description        String  @db.Text()
-  userId             String
+  userId             String?
   userFromTopEightId String?
   view_count         Int
-  user               User    @relation(fields: [userId], references: [id], onDelete: Cascade, name: "regular")
+  user               User?   @relation(fields: [userId], references: [id], onDelete: Cascade, name: "regular")
   userFromTopEight   User?   @relation(fields: [userFromTopEightId], references: [id], onDelete: Cascade, name: "topEight")
 
   @@index([userId])

@@ -24,6 +24,25 @@ const Sidebar: React.FC<{
       await apiContext.twitch.getFollowing.invalidate();
     },
   });
+  const removeFromTopEight = api.twitch.removeFromTopEight.useMutation({
+    onSuccess: async () => {
+      await apiContext.twitch.getTopEight.invalidate();
+    },
+    onMutate: async ({ streamer_id }) => {
+      const streamerToRemove = topEight?.find(
+        (streamer) => streamer.id === streamer_id
+      );
+      await apiContext.twitch.getTopEight.cancel();
+      const previousTopEight = apiContext.twitch.getTopEight.getData();
+      apiContext.twitch.getTopEight.setData(undefined, (data) =>
+        data?.filter((streamer) => streamer.id !== streamer_id)
+      );
+      apiContext.twitch.getFollowing.setData(undefined, (data) =>
+        data && streamerToRemove ? [...data, streamerToRemove] : data
+      );
+      return { previousTopEight };
+    },
+  });
   const addTopEight = api.twitch.addToTopEight.useMutation({
     onSuccess: async () => {
       await apiContext.twitch.getTopEight.invalidate();
@@ -34,12 +53,18 @@ const Sidebar: React.FC<{
       );
       await apiContext.twitch.getTopEight.cancel();
       const previousTopEight = apiContext.twitch.getTopEight.getData();
+      apiContext.twitch.getFollowing.setData(undefined, (data) =>
+        data?.filter((streamer) => streamer.id !== streamer_id)
+      );
       apiContext.twitch.getTopEight.setData(undefined, (data) =>
         data && newStreamer ? [...data, newStreamer] : data
       );
       return { previousTopEight };
     },
   });
+  const handleRemoveStreamer = (streamer_id: string) => {
+    removeFromTopEight.mutate({ streamer_id: streamer_id });
+  };
   const handleAddStreamer = (streamer_id: string) => {
     addTopEight.mutate({ streamer_id: streamer_id });
   };
@@ -51,7 +76,10 @@ const Sidebar: React.FC<{
         className="overflow-scroll bg-slate-900"
       >
         <div className="p-4">
-          <TopEight topEight={topEight} />
+          <TopEight
+            topEight={topEight}
+            handleRemoveStreamer={handleRemoveStreamer}
+          />
           <Following
             streamers={following}
             handleAddStreamer={handleAddStreamer}
