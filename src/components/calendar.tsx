@@ -5,9 +5,7 @@ import { type PropsWithChildren } from "react";
 import type { Event } from "react-big-calendar";
 import { type RouterOutputs } from "../utils/api";
 import overlapfunction from "../utils/overlap";
-import nooverlapfunction from "../utils/nooverlap";
-import { useState } from "react";
-import { type ChangeEvent } from "react";
+import useWindowSize from "../utils/useWindowSize";
 
 const localizer = momentLocalizer(moment);
 
@@ -38,13 +36,10 @@ export default function MyCalendar({
   events: RouterOutputs["twitch"]["getCalendar"];
   liveStatuses: RouterOutputs["twitch"]["getLiveStatus"];
 }>) {
-  const [wantsOverlap, setWantsOverlap] = useState<boolean>(false);
   console.log("liveStatuses", liveStatuses);
-  const handleOverlapChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setWantsOverlap(e.target.checked);
-  };
+  const { height } = useWindowSize();
 
-  const things = events
+  const formattedEvents = events
     .map(({ calendar, streamer_name }, number) => {
       return calendar?.data?.segments?.map(
         ({ start_time, end_time, title }) => {
@@ -70,10 +65,10 @@ export default function MyCalendar({
         <Calendar
           defaultView="week"
           localizer={localizer}
-          events={things.reverse()}
+          events={formattedEvents.reverse()}
           startAccessor="start"
           endAccessor="end"
-          style={{ height: window?.innerHeight - 56 }}
+          style={height ? { height: height - 56 } : {}}
           dayLayoutAlgorithm={overlapfunction}
           eventPropGetter={(event) => {
             return {

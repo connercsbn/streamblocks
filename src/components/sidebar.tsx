@@ -1,29 +1,19 @@
 import Following from "../components/following";
 import TopEight from "../components/topEight";
 import { type RouterOutputs, api } from "../utils/api";
-import { useEffect } from "react";
-import { useState } from "react";
-import type { Streamer } from "@prisma/client";
+import useWindowSize from "../utils/useWindowSize";
 
 const Sidebar: React.FC<{
   topEight: RouterOutputs["twitch"]["getTopEight"];
   following: RouterOutputs["twitch"]["getFollowing"];
 }> = ({ topEight, following }) => {
   const apiContext = api.useContext();
-  const [windowHeight, setWindowHeight] = useState(0);
-  useEffect(() => {
-    function handleResize() {
-      setWindowHeight(window.innerHeight);
-    }
-    window.addEventListener("resize", handleResize);
-    handleResize();
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
   const follow = api.twitch.follow.useMutation({
     onSuccess: async () => {
       await apiContext.twitch.getFollowing.invalidate();
     },
   });
+  const { height } = useWindowSize();
   const removeFromTopEight = api.twitch.removeFromTopEight.useMutation({
     onSuccess: async () => {
       await apiContext.twitch.getTopEight.invalidate();
@@ -72,7 +62,7 @@ const Sidebar: React.FC<{
   return (
     <>
       <div
-        style={{ height: windowHeight - 56 }}
+        style={height ? { height: height - 56 } : {}}
         className="overflow-scroll bg-slate-900"
       >
         <div className="p-4">

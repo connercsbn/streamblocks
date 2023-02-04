@@ -1,6 +1,4 @@
 import type { Streamer } from "@prisma/client";
-import Image from "next/image";
-import { api } from "../utils/api";
 import StreamerInList from "./streamerInList";
 import type { ChangeEvent } from "react";
 import { useState } from "react";
@@ -9,7 +7,6 @@ export const Following: React.FC<{
   handleAddStreamer: (streamer_id: string) => void;
   streamers?: Streamer[];
 }> = ({ streamers, handleAddStreamer }) => {
-  const apiContext = api.useContext();
   const [searchInput, setSearchInput] = useState("");
 
   const handleInput = (e: ChangeEvent<HTMLInputElement>) => {
