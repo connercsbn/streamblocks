@@ -2,6 +2,7 @@ import Following from "../components/following";
 import TopEight from "../components/topEight";
 import { type RouterOutputs, api } from "../utils/api";
 import useWindowSize from "../utils/useWindowSize";
+import { useState } from "react";
 
 const Sidebar: React.FC<{
   topEight: RouterOutputs["twitch"]["getTopEight"];
@@ -58,28 +59,56 @@ const Sidebar: React.FC<{
   const handleAddStreamer = (streamer_id: string) => {
     addTopEight.mutate({ streamer_id: streamer_id });
   };
+  const [open, setOpen] = useState(false);
 
   return (
     <>
       <div
         style={height ? { height: height - 56 } : {}}
-        className="overflow-scroll bg-slate-900"
+        className={`${open ? "w-96" : "w-16"} overflow-scroll bg-slate-900`}
       >
-        <div className="p-4">
+        <div className={`${open ? "" : "flex flex-col items-center"}`}>
+          <div
+            className={`flex items-center p-4
+         ${open ? "pr-3" : ""}  justify-between pb-1 align-middle`}
+          >
+            {open && (
+              <h3 className="text-lg font-bold text-white">Favorites</h3>
+            )}
+            <button
+              onClick={() => setOpen(!open)}
+              className={`h-8 w-8 rounded-md p-1 hover:bg-white/10 ${
+                open ? "" : "-scale-x-100"
+              }`}
+            >
+              <svg fill="white" viewBox="0 0 20 20">
+                <path d="M16 16V4h2v12h-2zM6 9l2.501-2.5-1.5-1.5-5 5 5 5 1.5-1.5-2.5-2.5h8V9H6z"></path>
+              </svg>
+            </button>
+          </div>
           <TopEight
+            open={open}
             topEight={topEight}
             handleRemoveStreamer={handleRemoveStreamer}
           />
+          {open && (
+            <h3 className="my-4 px-4 text-lg font-bold text-white">
+              Following
+            </h3>
+          )}
           <Following
+            open={open}
             streamers={following}
             handleAddStreamer={handleAddStreamer}
           />
-          <button
-            className="text-md relative my-4 self-end rounded-lg bg-white/10 p-2 px-5 font-bold text-white no-underline transition hover:bg-white/20"
-            onClick={() => follow.mutate()}
-          >
-            Load streamers you follow
-          </button>
+          {open && (
+            <button
+              className="text-md relative my-4 self-end rounded-lg bg-white/10 p-2 px-5 font-bold text-white no-underline transition hover:bg-white/20"
+              onClick={() => follow.mutate()}
+            >
+              Load streamers you follow
+            </button>
+          )}
         </div>
       </div>
     </>

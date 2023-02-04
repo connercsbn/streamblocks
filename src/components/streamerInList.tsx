@@ -5,37 +5,45 @@ import { useState } from "react";
 
 export default function Streamer({
   streamer,
+  size,
   top,
   handleRemoveStreamer,
   handleAddStreamer,
 }: PropsWithChildren<{
   streamer: Streamer;
+  size: "full" | "mini";
   top?: boolean;
   handleAddStreamer?: (streamer_id: string) => void;
   handleRemoveStreamer?: (streamer_id: string) => void;
 }>) {
   const [isHovering, setIsHovering] = useState(false);
+  const fullClasses = "px-4";
+  const miniClasses = "w-full justify-center";
   return (
     <div
       onMouseOver={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
-      className="relative flex py-1 align-middle text-white"
+      className={`relative flex cursor-default ${
+        size === "full" ? fullClasses : miniClasses
+      } py-1.5 align-middle text-white hover:bg-white/10`}
     >
-      <div className="relative mr-2 h-full self-center overflow-hidden rounded-full">
+      <div
+        className={`relative ${
+          size === "full" ? "mr-3" : ""
+        } h-full overflow-hidden rounded-full`}
+      >
         <Image alt="" src={streamer.image_url} height={30} width={30} />
       </div>
-      <div className="">
-        <span>{streamer.display_name}</span>
-      </div>
-      <div className="absolute right-0">
-        {!top && handleAddStreamer && isHovering && (
+      {size === "full" && <div>{streamer.display_name}</div>}
+      <div className="absolute right-4">
+        {!top && handleAddStreamer && isHovering && size === "full" && (
           <span className="relative ml-2">
             <MyButton onClick={() => handleAddStreamer(streamer.id)}>
               <PlusButton />
             </MyButton>
           </span>
         )}
-        {top && handleRemoveStreamer && isHovering && (
+        {top && handleRemoveStreamer && isHovering && size === "full" && (
           <MyButton onClick={() => handleRemoveStreamer(streamer.id)}>
             <MinusButton />
           </MyButton>
