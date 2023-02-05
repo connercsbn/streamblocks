@@ -1,13 +1,13 @@
 import Following from "../components/following";
-import TopEight from "../components/topEight";
+import Favorites from "./favorites";
 import { type RouterOutputs, api } from "../utils/api";
+import type { Streamer } from "@prisma/client";
 import useWindowSize from "../utils/useWindowSize";
 import { useState } from "react";
 
 const Sidebar: React.FC<{
-  topEight: RouterOutputs["twitch"]["getTopEight"];
   following: RouterOutputs["twitch"]["getFollowing"];
-}> = ({ topEight, following }) => {
+}> = ({ following }) => {
   const apiContext = api.useContext();
   const follow = api.twitch.follow.useMutation({
     onSuccess: async () => {
@@ -15,51 +15,38 @@ const Sidebar: React.FC<{
     },
   });
   const { height } = useWindowSize();
-  const removeFromTopEight = api.twitch.removeFromTopEight.useMutation({
+  const toggleCalendar = api.twitch.toggleOnCalendar.useMutation({
     onSuccess: async () => {
-      await apiContext.twitch.getTopEight.invalidate();
-    },
-    onMutate: async ({ streamer_id }) => {
-      const streamerToRemove = topEight?.find(
-        (streamer) => streamer.id === streamer_id
-      );
-      await apiContext.twitch.getTopEight.cancel();
-      const previousTopEight = apiContext.twitch.getTopEight.getData();
-      apiContext.twitch.getTopEight.setData(undefined, (data) =>
-        data?.filter((streamer) => streamer.id !== streamer_id)
-      );
-      apiContext.twitch.getFollowing.setData(undefined, (data) =>
-        data && streamerToRemove ? [...data, streamerToRemove] : data
-      );
-      return { previousTopEight };
+      await apiContext.twitch.getCalendar.invalidate();
+      await apiContext.twitch.getFollowing.invalidate();
     },
   });
-  const addTopEight = api.twitch.addToTopEight.useMutation({
+  const toggleFavorite = api.twitch.toggleFavorite.useMutation({
     onSuccess: async () => {
-      await apiContext.twitch.getTopEight.invalidate();
+      await apiContext.twitch.getFollowing.invalidate();
+      await apiContext.twitch.getCalendar.invalidate();
     },
-    onMutate: async ({ streamer_id }) => {
-      const newStreamer = following?.find(
-        (streamer) => streamer.id === streamer_id
-      );
-      await apiContext.twitch.getTopEight.cancel();
-      const previousTopEight = apiContext.twitch.getTopEight.getData();
-      apiContext.twitch.getFollowing.setData(undefined, (data) =>
-        data?.filter((streamer) => streamer.id !== streamer_id)
-      );
-      apiContext.twitch.getTopEight.setData(undefined, (data) =>
-        data && newStreamer ? [...data, newStreamer] : data
-      );
-      return { previousTopEight };
+    onMutate: async ({ streamerId }) => {
+      await apiContext.twitch.getFollowing.cancel();
+      const previousFollowing = apiContext.twitch.getFollowing.getData();
+      apiContext.twitch.getFollowing.setData(undefined, (data) => {
+        for (const streamer of data ?? []) {
+          if (streamer.id === streamerId) {
+            streamer.isFavorite = !streamer.isFavorite;
+          }
+        }
+        return data;
+      });
+      return { previousFollowing };
     },
   });
-  const handleRemoveStreamer = (streamer_id: string) => {
-    removeFromTopEight.mutate({ streamer_id: streamer_id });
+  const handleToggleCalendar = (streamerId: number) => {
+    toggleCalendar.mutate({ streamerId: streamerId });
   };
-  const handleAddStreamer = (streamer_id: string) => {
-    addTopEight.mutate({ streamer_id: streamer_id });
+  const handleToggleFavorite = (streamerId: number) => {
+    toggleFavorite.mutate({ streamerId: streamerId });
   };
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
 
   return (
     <>
@@ -86,10 +73,11 @@ const Sidebar: React.FC<{
               </svg>
             </button>
           </div>
-          <TopEight
+          <Favorites
             open={open}
-            topEight={topEight}
-            handleRemoveStreamer={handleRemoveStreamer}
+            following={following}
+            handleToggleFavorite={handleToggleFavorite}
+            handleToggleCalendar={handleToggleCalendar}
           />
           {open && (
             <h3 className="my-4 px-4 text-lg font-bold text-white">
@@ -98,8 +86,8 @@ const Sidebar: React.FC<{
           )}
           <Following
             open={open}
-            streamers={following}
-            handleAddStreamer={handleAddStreamer}
+            following={following}
+            handleToggleFavorite={handleToggleFavorite}
           />
           {open && (
             <button

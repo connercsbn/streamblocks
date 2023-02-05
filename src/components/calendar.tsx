@@ -40,14 +40,14 @@ export default function MyCalendar({
   const { height } = useWindowSize();
 
   const formattedEvents = events
-    .map(({ calendar, streamer_name }, number) => {
+    .map(({ calendar, id, name, isOnCalendar }, number) => {
       return calendar?.data?.segments?.map(
         ({ start_time, end_time, title }) => {
           return {
             start: new Date(start_time),
             end: new Date(end_time),
-            title: `${streamer_name}` + (title ? ": " + title : ""),
-            streamer: streamer_name,
+            title: `${name}` + (title ? ": " + title : ""),
+            streamer: name,
             streamerOrder: number,
           };
         }

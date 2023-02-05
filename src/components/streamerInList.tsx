@@ -7,14 +7,14 @@ export default function Streamer({
   streamer,
   size,
   top,
-  handleRemoveStreamer,
-  handleAddStreamer,
+  handleToggleFavorite,
+  handleToggleCalendar,
 }: PropsWithChildren<{
   streamer: Streamer;
   size: "full" | "mini";
   top?: boolean;
-  handleAddStreamer?: (streamer_id: string) => void;
-  handleRemoveStreamer?: (streamer_id: string) => void;
+  handleToggleFavorite: (streamerId: number) => void;
+  handleToggleCalendar?: (streamerId: number) => void;
 }>) {
   const [isHovering, setIsHovering] = useState(false);
   const fullClasses = "px-4";
@@ -32,25 +32,32 @@ export default function Streamer({
           size === "full" ? "mr-3" : ""
         } h-full overflow-hidden rounded-full`}
       >
-        <Image alt="" src={streamer.image_url} height={30} width={30} />
+        <Image alt="" src={streamer.imageUrl} height={30} width={30} />
       </div>
       {size === "full" && (
-        <div className="self-center">{streamer.display_name}</div>
+        <div className="self-center">{streamer.displayName}</div>
       )}
       <div className="absolute right-4">
-        {!top && handleAddStreamer && isHovering && size === "full" && (
+        {!top && isHovering && size === "full" && (
           <span className="relative top-0.5 ml-2">
-            <MyButton onClick={() => handleAddStreamer(streamer.id)}>
+            <MyButton onClick={() => handleToggleFavorite(streamer.id)}>
               <PlusButton />
             </MyButton>
           </span>
         )}
-        {top && handleRemoveStreamer && isHovering && size === "full" && (
+        {top && isHovering && size === "full" && (
           <span className="relative top-0.5 ml-2">
-            <MyButton onClick={() => handleRemoveStreamer(streamer.id)}>
+            <MyButton onClick={() => handleToggleFavorite(streamer.id)}>
               <MinusButton />
             </MyButton>
           </span>
+        )}
+        {top && size === "full" && handleToggleCalendar && (
+          <input
+            checked={streamer.isOnCalendar}
+            type="checkbox"
+            onChange={() => handleToggleCalendar(streamer.id)}
+          />
         )}
       </div>
     </div>

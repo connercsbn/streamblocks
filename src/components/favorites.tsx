@@ -1,24 +1,28 @@
 import type { Streamer } from "@prisma/client";
 import Image from "next/image";
 import Draggable from "react-draggable";
+import { type RouterOutputs } from "../utils/api";
 import StreamerInList from "./streamerInList";
 export const TopEight: React.FC<{
   open: boolean;
-  topEight?: Streamer[];
-  handleRemoveStreamer?: (streamer_id: string) => void;
-}> = ({ open, topEight, handleRemoveStreamer }) => {
-  if (!topEight?.length) {
+  following: RouterOutputs["twitch"]["getFollowing"];
+  handleToggleFavorite: (streamerId: number) => void;
+  handleToggleCalendar: (streamerId: number) => void;
+}> = ({ open, handleToggleFavorite, handleToggleCalendar, following }) => {
+  const favorites = following?.filter((streamer) => streamer.isFavorite);
+  if (!favorites) {
     return <></>;
   }
   return (
     <>
       <div className={`my-2 ${open ? "" : "w-full"}`}>
-        {topEight.map((streamer, key) => (
+        {favorites.map((streamer, key) => (
           <StreamerInList
             key={key}
             size={open ? "full" : "mini"}
             streamer={streamer}
-            handleRemoveStreamer={handleRemoveStreamer}
+            handleToggleFavorite={handleToggleFavorite}
+            handleToggleCalendar={handleToggleCalendar}
             top={true}
           />
         ))}

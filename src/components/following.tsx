@@ -2,12 +2,13 @@ import type { Streamer } from "@prisma/client";
 import StreamerInList from "./streamerInList";
 import type { ChangeEvent } from "react";
 import { useState } from "react";
+import { type RouterOutputs } from "../utils/api";
 
 export const Following: React.FC<{
   open: boolean;
-  handleAddStreamer: (streamer_id: string) => void;
-  streamers?: Streamer[];
-}> = ({ open, streamers, handleAddStreamer }) => {
+  handleToggleFavorite: (streamerId: number) => void;
+  following: RouterOutputs["twitch"]["getFollowing"];
+}> = ({ open, following, handleToggleFavorite: handleToggleStreamer }) => {
   const [searchInput, setSearchInput] = useState("");
 
   const handleInput = (e: ChangeEvent<HTMLInputElement>) => {
@@ -15,10 +16,11 @@ export const Following: React.FC<{
   };
 
   const searchFilter = (streamer: Streamer) => {
-    return streamer.display_name
+    return streamer.displayName
       .toLowerCase()
       .includes(searchInput.toLowerCase());
   };
+  const regulars = following?.filter((streamer) => !streamer.isFavorite);
   return (
     <>
       {open && (
@@ -27,17 +29,14 @@ export const Following: React.FC<{
         </div>
       )}
       <div className={`my-2 ${open ? "" : "w-full"}`}>
-        {!!streamers?.length &&
-          streamers
-            .filter(searchFilter)
-            .map((streamer, key) => (
-              <StreamerInList
-                streamer={streamer}
-                key={key}
-                size={open ? "full" : "mini"}
-                handleAddStreamer={handleAddStreamer}
-              />
-            ))}
+        {regulars?.filter(searchFilter).map((streamer, key) => (
+          <StreamerInList
+            streamer={streamer}
+            key={key}
+            size={open ? "full" : "mini"}
+            handleToggleFavorite={handleToggleStreamer}
+          />
+        ))}
       </div>
     </>
   );

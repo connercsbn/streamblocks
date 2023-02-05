@@ -1,29 +1,37 @@
 import { useSession } from "next-auth/react";
 import Nav from "../components/nav";
 import MyCalendar from "../components/calendar";
-import { api, type RouterOutputs } from "../utils/api";
+import { api } from "../utils/api";
 import { type PropsWithChildren } from "react";
 import { type NextPage } from "next";
 import Sidebar from "../components/sidebar";
 import { signIn } from "next-auth/react";
+import type { Streamer } from "@prisma/client";
+import { type RouterOutputs } from "../utils/api";
 
 const GetCalendar = ({
-  topEight,
+  following,
 }: PropsWithChildren<{
-  topEight: RouterOutputs["twitch"]["getTopEight"];
+  following: RouterOutputs["twitch"]["getFollowing"];
 }>) => {
   const { data: sessionData } = useSession();
+  const favorites = following?.filter((streamer) => streamer.isFavorite) ?? [];
   const calendar = api.twitch.getCalendar.useQuery(
-    { streamer_ids: topEight?.map((streamer) => streamer.id) ?? [] },
     {
-      enabled: !!topEight?.some((streamer) => streamer.id),
+      streamerIds:
+        favorites
+          ?.filter((streamer) => streamer.isFavorite && streamer.isOnCalendar)
+          .map((streamer) => streamer.id) ?? [],
+    },
+    {
+      enabled: !!favorites.some((streamer) => streamer.twitchId),
       refetchOnWindowFocus: false,
     }
   );
   const liveStatuses = api.twitch.getLiveStatus.useQuery(
-    { streamer_ids: topEight?.map((streamer) => streamer.id) ?? [] },
+    { streamer_ids: favorites?.map((streamer) => streamer.twitchId) ?? [] },
     {
-      enabled: !!topEight?.some((streamer) => streamer.id),
+      enabled: !!favorites?.some((streamer) => streamer.twitchId),
       refetchOnWindowFocus: false,
     }
   );
@@ -35,7 +43,11 @@ const GetCalendar = ({
     <>
       <div className="w-full">
         <MyCalendar
-          events={calendar.data ?? []}
+          events={
+            calendar.data?.filter(
+              (streamerCalendar) => streamerCalendar.isOnCalendar
+            ) ?? []
+          }
           liveStatuses={liveStatuses.data ?? []}
         />
       </div>
@@ -45,9 +57,6 @@ const GetCalendar = ({
 
 const Home: NextPage = () => {
   const { data: sessionData } = useSession();
-  const topEight = api.twitch.getTopEight.useQuery(undefined, {
-    enabled: !!sessionData?.user,
-  });
   const following = api.twitch.getFollowing.useQuery(undefined, {
     enabled: !!sessionData?.user,
   });
@@ -56,8 +65,8 @@ const Home: NextPage = () => {
       <>
         <Nav />
         <div className="flex w-full">
-          <Sidebar topEight={topEight.data} following={following.data} />
-          <GetCalendar topEight={topEight.data} />
+          <Sidebar following={following.data} />
+          <GetCalendar following={following.data ?? []} />
         </div>
       </>
     );

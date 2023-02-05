@@ -116,7 +116,7 @@ const live_fetch = async (id: string): Promise<twitch_live_response> => {
   return TwitchLiveSchema.parse(await res);
 };
 
-const follow_fetch = async (id: string): Promise<twitch_follow_response> => {
+const followFetch = async (id: string): Promise<twitch_follow_response> => {
   console.log(`param for follow_fetch: ${id}`);
   const res = (
     await fetch(
@@ -146,7 +146,7 @@ const calendar_fetch = async (
   return calendarData.data;
 };
 
-const user_fetch = async (param: string): Promise<twitch_user> => {
+const userFetch = async (param: string): Promise<twitch_user> => {
   console.log("param for user_fetch: ", param);
   const res = (
     await fetch(`https://api.twitch.tv/helix/users?id=${param}`, opts)
@@ -157,26 +157,39 @@ const user_fetch = async (param: string): Promise<twitch_user> => {
 export const twitchRouter = createTRPCRouter({
   getLiveStatus: protectedProcedure
     .input(z.object({ streamer_ids: z.array(z.string()) }))
-    .query(async ({ input: { streamer_ids }, ctx }) => {
+    .query(async ({ input: { streamer_ids } }) => {
       const schedules = streamer_ids.map(live_fetch);
       return await Promise.all(schedules);
     }),
   getCalendar: protectedProcedure
-    .input(z.object({ streamer_ids: z.array(z.string()) }))
-    .query(async ({ input: { streamer_ids }, ctx }) => {
+    .input(z.object({ streamerIds: z.array(z.number()) }))
+    .query(async ({ input: { streamerIds }, ctx }) => {
       const streamersWithoutCalendars: string[] = [];
-      const streamerCalendars: [string, twitch_calendar_response][] = [];
-      for (const streamer_id of streamer_ids) {
-        const tempCal = await calendar_fetch(streamer_id);
+      const streamerCalendars: {
+        id: number;
+        name: string;
+        calendar: twitch_calendar_response;
+        isOnCalendar: boolean;
+      }[] = [];
+      const twitchStreamersInfo = await Promise.all(
+        streamerIds.map(async (streamerId) => {
+          const streamer = await ctx.prisma.streamer.findUniqueOrThrow({
+            where: { id: streamerId },
+          });
+          return {
+            twitchId: streamer.twitchId,
+            name: streamer.displayName,
+            id: streamerId,
+            isOnCalendar: streamer.isOnCalendar,
+          };
+        })
+      );
+      for (const twitchStreamerInfo of twitchStreamersInfo) {
+        const tempCal = await calendar_fetch(twitchStreamerInfo.twitchId);
         if (tempCal?.data?.segments) {
-          const streamer_name = (
-            await ctx.prisma.streamer.findUniqueOrThrow({
-              where: { id: streamer_id },
-            })
-          ).display_name;
-          streamerCalendars.push([streamer_name, tempCal]);
+          streamerCalendars.push({ calendar: tempCal, ...twitchStreamerInfo });
         } else {
-          streamersWithoutCalendars.push(streamer_id);
+          streamersWithoutCalendars.push(twitchStreamerInfo.twitchId);
         }
       }
       console.log(
@@ -184,32 +197,15 @@ export const twitchRouter = createTRPCRouter({
         (
           await ctx.prisma.streamer.findMany({
             where: {
-              id: {
+              twitchId: {
                 in: streamersWithoutCalendars,
               },
             },
           })
-        ).map((streamer) => streamer.display_name)
+        ).map((streamer) => streamer.displayName)
       );
-      return streamerCalendars.map(([streamer_name, calendar]) => {
-        return {
-          streamer_name,
-          calendar,
-        };
-      });
+      return streamerCalendars;
     }),
-  getTopEight: protectedProcedure.query(async ({ ctx }) => {
-    return (
-      await ctx.prisma.user.findUnique({
-        where: {
-          id: ctx.session.user.id,
-        },
-        include: {
-          topEight: true,
-        },
-      })
-    )?.topEight;
-  }),
   getFollowing: protectedProcedure.query(async ({ ctx }) => {
     return (
       await ctx.prisma.user.findUnique({
@@ -222,67 +218,28 @@ export const twitchRouter = createTRPCRouter({
       })
     )?.streamers;
   }),
-  reformatTopEight: protectedProcedure
-    .input(z.object({ streamer_ids: z.array(z.string()) }))
+  toggleOnCalendar: protectedProcedure
+    .input(z.object({ streamerId: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const usersToAdd = await ctx.prisma.streamer.findMany({
-        where: {
-          id: {
-            in: input.streamer_ids,
-          },
-        },
+      const streamer = await ctx.prisma.streamer.findUniqueOrThrow({
+        where: { id: input.streamerId },
       });
-      await ctx.prisma.user.update({
-        where: { id: ctx.session.user.id },
+      await ctx.prisma.streamer.update({
+        where: { id: input.streamerId },
         data: {
-          topEight: {
-            connect: usersToAdd,
-          },
+          isOnCalendar: !streamer.isOnCalendar,
         },
       });
     }),
-  addToTopEight: protectedProcedure
-    .input(z.object({ streamer_id: z.string() }))
+  toggleFavorite: protectedProcedure
+    .input(z.object({ streamerId: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const userId = ctx.session.user.id;
-      await ctx.prisma.user.update({
-        where: {
-          id: userId,
-        },
-        data: {
-          topEight: {
-            connect: {
-              id: input.streamer_id,
-            },
-          },
-          streamers: {
-            disconnect: {
-              id: input.streamer_id,
-            },
-          },
-        },
+      const streamerToToggle = await ctx.prisma.streamer.findUniqueOrThrow({
+        where: { id: input.streamerId },
       });
-    }),
-  removeFromTopEight: protectedProcedure
-    .input(z.object({ streamer_id: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const userId = ctx.session.user.id;
-      await ctx.prisma.user.update({
-        where: {
-          id: userId,
-        },
-        data: {
-          topEight: {
-            disconnect: {
-              id: input.streamer_id,
-            },
-          },
-          streamers: {
-            connect: {
-              id: input.streamer_id,
-            },
-          },
-        },
+      await ctx.prisma.streamer.update({
+        where: { id: streamerToToggle.id },
+        data: { isFavorite: !streamerToToggle.isFavorite },
       });
     }),
   follow: protectedProcedure.mutation(async ({ ctx }) => {
@@ -298,30 +255,25 @@ export const twitchRouter = createTRPCRouter({
         where: { id: userId },
         include: { streamers: true },
       })
-    ).streamers.map((streamer) => streamer.id);
-    const followingTwitch = (await follow_fetch(twitchId)).data.map(
+    ).streamers.map((streamer) => streamer.twitchId);
+    const followingTwitch = (await followFetch(twitchId)).data.map(
       (streamer) => streamer.to_id
     );
     const notYetFollowingInDb = await Promise.all(
       followingTwitch
         .filter((streamer) => !followingDb.includes(streamer))
-        .map((streamer) => user_fetch(streamer))
+        .map((streamer) => userFetch(streamer))
     );
     const info = notYetFollowingInDb
       .flatMap((streamer) => streamer.data)
       .map(
         ({ description, display_name, id, profile_image_url, view_count }) => {
           return {
-            create: {
-              id,
-              description,
-              display_name,
-              view_count,
-              image_url: profile_image_url,
-            },
-            where: {
-              id,
-            },
+            twitchId: id,
+            description,
+            displayName: display_name,
+            viewCount: view_count,
+            imageUrl: profile_image_url,
           };
         }
       );
@@ -331,7 +283,7 @@ export const twitchRouter = createTRPCRouter({
       },
       data: {
         streamers: {
-          connectOrCreate: info,
+          createMany: { data: info },
         },
       },
     });

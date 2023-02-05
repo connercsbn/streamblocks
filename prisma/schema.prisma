@@ -53,23 +53,23 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
-  streamers     Streamer[] @relation("regular")
-  topEight      Streamer[] @relation("topEight")
+  streamers     Streamer[]
 }
 
 model Streamer {
-  id                 String  @id
-  display_name       String
-  image_url          String
+  id                 Int     @id @default(autoincrement())
+  twitchId           String
+  displayName        String
+  imageUrl           String
   description        String  @db.Text()
   userId             String?
   userFromTopEightId String?
-  view_count         Int
-  user               User?   @relation(fields: [userId], references: [id], onDelete: Cascade, name: "regular")
-  userFromTopEight   User?   @relation(fields: [userFromTopEightId], references: [id], onDelete: Cascade, name: "topEight")
+  viewCount          Int
+  isFavorite         Boolean @default(false)
+  isOnCalendar       Boolean @default(true)
+  user               User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@index([userFromTopEightId])
 }
 
 model VerificationToken {
