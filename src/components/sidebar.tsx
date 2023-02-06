@@ -1,7 +1,6 @@
 import Following from "../components/following";
 import Favorites from "./favorites";
 import { type RouterOutputs, api } from "../utils/api";
-import type { Streamer } from "@prisma/client";
 import useWindowSize from "../utils/useWindowSize";
 import { useState } from "react";
 
@@ -9,16 +8,33 @@ const Sidebar: React.FC<{
   following: RouterOutputs["twitch"]["getFollowing"];
 }> = ({ following }) => {
   const apiContext = api.useContext();
+  const createCalendars = api.twitch.addCalendars.useMutation();
   const follow = api.twitch.follow.useMutation({
     onSuccess: async () => {
       await apiContext.twitch.getFollowing.invalidate();
+      createCalendars.mutate();
     },
   });
   const { height } = useWindowSize();
   const toggleCalendar = api.twitch.toggleOnCalendar.useMutation({
-    onSuccess: async () => {
-      await apiContext.twitch.getCalendar.invalidate();
-      await apiContext.twitch.getFollowing.invalidate();
+    onMutate: ({ streamerId }) => {
+      apiContext.twitch.getCalendar.setData(undefined, (data) =>
+        data?.map((streamer) =>
+          streamer.id === streamerId
+            ? { ...streamer, isOnCalendar: !streamer.isOnCalendar }
+            : streamer
+        )
+      );
+      apiContext.twitch.getFollowing.setData(undefined, (data) =>
+        data?.map((streamer) =>
+          streamer.id === streamerId
+            ? { ...streamer, isOnCalendar: !streamer.isOnCalendar }
+            : streamer
+        )
+      );
+    },
+    onError: (error) => {
+      console.log(error);
     },
   });
   const toggleFavorite = api.twitch.toggleFavorite.useMutation({

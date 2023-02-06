@@ -38,27 +38,30 @@ export default function Streamer({
         <div className="self-center">{streamer.displayName}</div>
       )}
       <div className="absolute right-4">
-        {!top && isHovering && size === "full" && (
-          <span className="relative top-0.5 ml-2">
-            <MyButton onClick={() => handleToggleFavorite(streamer.id)}>
-              <PlusButton />
-            </MyButton>
-          </span>
-        )}
-        {top && isHovering && size === "full" && (
-          <span className="relative top-0.5 ml-2">
-            <MyButton onClick={() => handleToggleFavorite(streamer.id)}>
-              <MinusButton />
-            </MyButton>
-          </span>
-        )}
-        {top && size === "full" && handleToggleCalendar && (
-          <input
-            checked={streamer.isOnCalendar}
-            type="checkbox"
-            onChange={() => handleToggleCalendar(streamer.id)}
-          />
-        )}
+        <div className="flex">
+          {!top && isHovering && size === "full" && (
+            <span className="relative top-0.5 ml-2">
+              <MyButton onClick={() => handleToggleFavorite(streamer.id)}>
+                <PlusButton />
+              </MyButton>
+            </span>
+          )}
+          {top && isHovering && size === "full" && (
+            <span className="relative top-0.5 ml-2">
+              <MyButton onClick={() => handleToggleFavorite(streamer.id)}>
+                <MinusButton />
+              </MyButton>
+            </span>
+          )}
+          {top && size === "full" && handleToggleCalendar && (
+            <input
+              checked={streamer.isOnCalendar}
+              type="checkbox"
+              onChange={() => handleToggleCalendar(streamer.id)}
+              className="h-7"
+            />
+          )}
+        </div>
       </div>
     </div>
   );
@@ -74,7 +77,7 @@ const MyButton = ({
   return (
     <button
       onClick={onClick}
-      className="z-10 self-end rounded-full bg-slate-700/80 p-1 text-sm  font-bold text-white no-underline transition hover:bg-slate-500/80"
+      className="relative top-0 right-2 z-10 self-end rounded-full bg-slate-700/80 p-1 text-sm font-bold text-white no-underline transition hover:bg-slate-500/80"
     >
       {children}
     </button>

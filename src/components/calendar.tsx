@@ -31,32 +31,30 @@ const streamerColorMap = [
 
 export default function MyCalendar({
   events,
-  liveStatuses,
 }: PropsWithChildren<{
   events: RouterOutputs["twitch"]["getCalendar"];
-  liveStatuses: RouterOutputs["twitch"]["getLiveStatus"];
 }>) {
-  console.log("liveStatuses", liveStatuses);
+  // console.log("liveStatuses", liveStatuses);
   const { height } = useWindowSize();
 
-  const formattedEvents = events
-    .map(({ calendar, id, name, isOnCalendar }, number) => {
-      return calendar?.data?.segments?.map(
-        ({ start_time, end_time, title }) => {
-          return {
-            start: new Date(start_time),
-            end: new Date(end_time),
-            title: `${name}` + (title ? ": " + title : ""),
-            streamer: name,
-            streamerOrder: number,
-          };
-        }
+  const formattedEvents = (events ?? [])
+    .map(({ calendar, id, displayName, isOnCalendar }, number) => {
+      return (calendar?.segments ?? []).map(
+        ({ startTime, endTime, title }) => ({
+          start: new Date(startTime),
+          end: new Date(endTime),
+          title: `${displayName}` + (title ? ": " + title : ""),
+          streamerOrder: number,
+          streamer: displayName,
+          isOnCalendar,
+        })
       );
     })
     .flat()
     .filter(Boolean) as (Event & {
     streamer: string;
     streamerOrder: number;
+    isOnCalendar: boolean;
   })[];
 
   return (

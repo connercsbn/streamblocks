@@ -128,7 +128,7 @@ const followFetch = async (id: string): Promise<twitch_follow_response> => {
   return TwitchFollowSchema.parse(await res);
 };
 
-const calendar_fetch = async (
+const calendarFetch = async (
   param: string
 ): Promise<twitch_calendar_response | undefined> => {
   console.log(`param for calendar_fetch: ${param}`);
@@ -161,7 +161,64 @@ export const twitchRouter = createTRPCRouter({
       const schedules = streamer_ids.map(live_fetch);
       return await Promise.all(schedules);
     }),
-  getCalendar: protectedProcedure
+  addCalendars: protectedProcedure.mutation(async ({ ctx }) => {
+    const user = await ctx.prisma.user.findUniqueOrThrow({
+      where: { id: ctx.session.user.id },
+    });
+    const streamers = await ctx.prisma.streamer.findMany({
+      where: { userId: user.id },
+    });
+    for (const streamer of streamers) {
+      const segments =
+        (await calendarFetch(streamer.twitchId))?.data?.segments?.map(
+          ({ id, start_time, end_time, title }) => {
+            return {
+              segmentId: id,
+              startTime: start_time,
+              endTime: end_time,
+              title,
+            };
+          }
+        ) ?? [];
+      await ctx.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          streamers: {
+            update: {
+              where: {
+                id: streamer.id,
+              },
+              data: {
+                calendar: {
+                  create: {
+                    lastUpdated: new Date().toISOString(),
+                    segments: {
+                      createMany: {
+                        data: segments,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+    }
+  }),
+  getCalendar: protectedProcedure.query(async ({ ctx }) => {
+    return (
+      await ctx.prisma.user.findUnique({
+        where: {
+          id: ctx.session.user.id,
+        },
+        include: {
+          streamers: { include: { calendar: { include: { segments: true } } } },
+        },
+      })
+    )?.streamers.filter((streamer) => streamer.isFavorite);
+  }),
+  oldGetCalendar: protectedProcedure
     .input(z.object({ streamerIds: z.array(z.number()) }))
     .query(async ({ input: { streamerIds }, ctx }) => {
       const streamersWithoutCalendars: string[] = [];
@@ -185,7 +242,7 @@ export const twitchRouter = createTRPCRouter({
         })
       );
       for (const twitchStreamerInfo of twitchStreamersInfo) {
-        const tempCal = await calendar_fetch(twitchStreamerInfo.twitchId);
+        const tempCal = await calendarFetch(twitchStreamerInfo.twitchId);
         if (tempCal?.data?.segments) {
           streamerCalendars.push({ calendar: tempCal, ...twitchStreamerInfo });
         } else {
