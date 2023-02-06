@@ -24,7 +24,7 @@ const GetCalendar = ({
           .map((streamer) => streamer.id) ?? [],
     },
     {
-      enabled: !!favorites.some((streamer) => streamer.twitchId),
+      enabled: !!favorites?.length,
       refetchOnWindowFocus: false,
     }
   );

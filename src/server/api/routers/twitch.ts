@@ -283,7 +283,9 @@ export const twitchRouter = createTRPCRouter({
       },
       data: {
         streamers: {
-          createMany: { data: info },
+          createMany: {
+            data: info,
+          },
         },
       },
     });

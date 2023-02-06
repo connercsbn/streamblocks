@@ -57,19 +57,42 @@ model User {
 }
 
 model Streamer {
-  id                 Int     @id @default(autoincrement())
-  twitchId           String
-  displayName        String
-  imageUrl           String
-  description        String  @db.Text()
-  userId             String?
-  userFromTopEightId String?
-  viewCount          Int
-  isFavorite         Boolean @default(false)
-  isOnCalendar       Boolean @default(true)
-  user               User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           Int       @id @default(autoincrement())
+  twitchId     String
+  displayName  String
+  imageUrl     String
+  description  String    @db.Text()
+  userId       String
+  viewCount    Int
+  isFavorite   Boolean   @default(false)
+  isOnCalendar Boolean   @default(true)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  calendar     Calendar?
 
   @@index([userId])
+}
+
+model Calendar {
+  id          Int               @id @default(autoincrement())
+  segments    CalendarSegment[]
+  lastUpdated String
+  streamerId  Int               @unique
+  Streamer    Streamer          @relation(fields: [streamerId], references: [id])
+}
+
+model CalendarSegment {
+  id                Int      @id @default(autoincrement())
+  segmentId         String
+  startTime         String
+  endTime           String
+  title             String
+  modifiedStartTime String?
+  modifiedEndTime   String?
+  canceledUntil     String?
+  calendarId        Int
+  Calendar          Calendar @relation(fields: [calendarId], references: [id])
+
+  @@index([calendarId])
 }
 
 model VerificationToken {
