@@ -17,15 +17,7 @@ const GetCalendar = ({
   following: RouterOutputs["twitch"]["getFollowing"];
 }>) => {
   const { data: sessionData } = useSession();
-  // const favorites = following?.filter((streamer) => streamer.isFavorite) ?? [];
   const calendar = api.twitch.getCalendar.useQuery();
-  // const liveStatuses = api.twitch.getLiveStatus.useQuery(
-  //   { streamer_ids: favorites?.map((streamer) => streamer.twitchId) ?? [] },
-  //   {
-  //     enabled: !!favorites?.some((streamer) => streamer.twitchId),
-  //     refetchOnWindowFocus: false,
-  //   }
-  // );
 
   if (!sessionData?.user) {
     return <></>;
@@ -39,7 +31,6 @@ const GetCalendar = ({
             (streamer) =>
               streamer.isOnCalendar && streamer.calendar?.segments.length
           )}
-          // liveStatuses={liveStatuses.data ?? []}
         />
       </div>
     </>

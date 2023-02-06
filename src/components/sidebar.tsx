@@ -3,6 +3,8 @@ import Favorites from "./favorites";
 import { type RouterOutputs, api } from "../utils/api";
 import useWindowSize from "../utils/useWindowSize";
 import { useState } from "react";
+import { userAgent } from "next/server";
+import Live from "./live";
 
 const Sidebar: React.FC<{
   following: RouterOutputs["twitch"]["getFollowing"];
@@ -68,9 +70,22 @@ const Sidebar: React.FC<{
     <>
       <div
         style={height ? { height: height - 56 } : {}}
-        className={`${open ? "w-80" : "w-16"} overflow-scroll bg-slate-900`}
+        className={`${
+          open ? "w-80" : "w-16 pt-10"
+        } relative overflow-scroll bg-slate-900`}
       >
+        <button
+          onClick={() => setOpen(!open)}
+          className={`absolute  right-2 z-10 h-8 w-8 rounded-md p-1 hover:bg-white/10 ${
+            open ? "top-5" : "top-2 right-3.5 -scale-x-100"
+          }`}
+        >
+          <svg fill="white" viewBox="0 0 20 20">
+            <path d="M16 16V4h2v12h-2zM6 9l2.501-2.5-1.5-1.5-5 5 5 5 1.5-1.5-2.5-2.5h8V9H6z"></path>
+          </svg>
+        </button>
         <div className={`${open ? "" : "flex flex-col items-center"}`}>
+          <Live open={open} />
           <div
             className={`flex items-center p-4
          ${open ? "pr-3" : ""}  justify-between pb-1 align-middle`}
@@ -78,16 +93,6 @@ const Sidebar: React.FC<{
             {open && (
               <h3 className="text-lg font-bold text-white">Favorites</h3>
             )}
-            <button
-              onClick={() => setOpen(!open)}
-              className={`h-8 w-8 rounded-md p-1 hover:bg-white/10 ${
-                open ? "" : "-scale-x-100"
-              }`}
-            >
-              <svg fill="white" viewBox="0 0 20 20">
-                <path d="M16 16V4h2v12h-2zM6 9l2.501-2.5-1.5-1.5-5 5 5 5 1.5-1.5-2.5-2.5h8V9H6z"></path>
-              </svg>
-            </button>
           </div>
           <Favorites
             open={open}
