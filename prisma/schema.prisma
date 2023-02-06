@@ -77,7 +77,7 @@ model Calendar {
   segments    CalendarSegment[]
   lastUpdated String
   streamerId  Int               @unique
-  Streamer    Streamer          @relation(fields: [streamerId], references: [id])
+  Streamer    Streamer          @relation(fields: [streamerId], references: [id], onDelete: Cascade)
 }
 
 model CalendarSegment {
@@ -90,7 +90,7 @@ model CalendarSegment {
   modifiedEndTime   String?
   canceledUntil     String?
   calendarId        Int
-  Calendar          Calendar @relation(fields: [calendarId], references: [id])
+  Calendar          Calendar @relation(fields: [calendarId], references: [id], onDelete: Cascade)
 
   @@index([calendarId])
 }
