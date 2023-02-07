@@ -112,33 +112,3 @@ const PlusButton = () => (
     />
   </svg>
 );
-// <div
-//   className={
-//     "block cursor-default pt-1 text-2xl font-bold text-white hover:text-white"
-//   }
-//   key={key}
-// >
-//   <div className="flex align-middle">
-//     <div className="relative mr-2 h-full self-center">
-//       <Image
-//         alt=""
-//         src={streamer.image_url}
-//         height={30}
-//         width={30}
-//       ></Image>
-//     </div>
-//     <div className="">
-//       <span>{streamer.display_name}</span>
-//       <span className="mx-5">
-//         <button
-//           onClick={() =>
-//             void addTopEight.mutate({ streamer_id: streamer.id })
-//           }
-//           className="relative self-end rounded-full bg-white/10 p-1 px-2 text-sm font-bold text-white no-underline transition hover:bg-white/20"
-//         >
-//           Add to top 8
-//         </button>
-//       </span>
-//     </div>
-//   </div>
-// </div>
