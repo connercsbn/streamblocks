@@ -8,6 +8,16 @@ export const Live: React.FC<{
 }> = ({ open }) => {
   const liveStatuses = api.twitch.getLiveStatus.useQuery();
 
+  function formattedGameName(gameName: string) {
+    const maxLength = 20;
+    if (gameName.length >= maxLength) {
+      const gameNameArray = gameName.split("");
+      gameNameArray.splice(maxLength, gameName.length - maxLength, "...");
+      gameName = gameNameArray.join("");
+    }
+    return gameName;
+  }
+
   function formattedViewerCount(number: number): string {
     let formatted: string | string[] = "";
     if (number >= 1000) {
@@ -49,7 +59,7 @@ export const Live: React.FC<{
                   <div>
                     <div className="">{status?.streamer.displayName}</div>
                     <div className="text-xs leading-4 text-white/70">
-                      {status?.game_name}
+                      {formattedGameName(status?.game_name ?? "")}
                     </div>
                   </div>
                 </div>

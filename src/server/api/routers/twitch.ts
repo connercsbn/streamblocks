@@ -30,8 +30,8 @@ const TwitchLiveSchema = z.object({
           started_at: z.string().optional(),
           language: z.string().optional(),
           thumbnail_url: z.string().optional(),
-          tag_ids: z.array(z.string()).optional(),
-          tags: z.array(z.string()).optional(),
+          tag_ids: z.array(z.string()).nullish(),
+          tags: z.array(z.string()).nullish(),
           is_mature: z.boolean().optional(),
         })
         .optional()
