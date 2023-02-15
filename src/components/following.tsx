@@ -5,10 +5,10 @@ import { useState } from "react";
 import { type RouterOutputs } from "../utils/api";
 
 export const Following: React.FC<{
-  open: boolean;
+  big: boolean;
   handleToggleFavorite: (streamerId: number) => void;
   following: RouterOutputs["twitch"]["getFollowing"];
-}> = ({ open, following, handleToggleFavorite: handleToggleStreamer }) => {
+}> = ({ big, following, handleToggleFavorite: handleToggleStreamer }) => {
   const [searchInput, setSearchInput] = useState("");
 
   const handleInput = (e: ChangeEvent<HTMLInputElement>) => {
@@ -23,17 +23,17 @@ export const Following: React.FC<{
   const regulars = following?.filter((streamer) => !streamer.isFavorite);
   return (
     <>
-      {open && (
-        <div className="mb-3 px-4">
+      {big && (
+        <div className="my-2 px-4">
           <SearchBar searchInput={searchInput} handleInput={handleInput} />
         </div>
       )}
-      <div className={`my-2 ${open ? "" : "w-full"}`}>
+      <div className={`my-2 ${big ? "" : "w-full"}`}>
         {regulars?.filter(searchFilter).map((streamer, key) => (
           <StreamerInList
             streamer={streamer}
             key={key}
-            size={open ? "full" : "mini"}
+            size={big ? "full" : "mini"}
             handleToggleFavorite={handleToggleStreamer}
           />
         ))}
@@ -67,9 +67,9 @@ const SearchBar = ({
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+            strokeWidth="2"
             d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
           ></path>
         </svg>

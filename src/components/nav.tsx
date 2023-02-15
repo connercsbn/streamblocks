@@ -12,7 +12,7 @@ const links = [
 
 export default function Nav() {
   const { data: sessionData } = useSession();
-  const [navOpen, setNavOpen] = useState(true);
+  const [navOpen, setNavOpen] = useState(false);
   const router = useRouter();
   const activeClasses =
     "mx-1 relative inline-flex items-center rounded-md border border-transparent px-2 py-1 transition-colors hover:no-underline border bg-purple-200/50 text-purple-800 dark:border-purple-200/20 dark:bg-purple-200/10 dark:hover:border-purple-200/50 rounded-lg text-purple-800 hover:bg-purple-200/50 hover:text-purple-800 dark:text-purple-100 dark:hover:bg-purple-200/10 dark:hover:text-purple-300";
@@ -52,7 +52,8 @@ export default function Nav() {
               </button>
               {navOpen && (
                 <ClickAwayListener
-                  onClickAway={() => {
+                  onClickAway={(e) => {
+                    console.log(e);
                     setNavOpen(false);
                   }}
                 >

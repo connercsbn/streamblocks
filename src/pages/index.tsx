@@ -3,23 +3,13 @@ import Nav from "../components/nav";
 import MyCalendar from "../components/calendar";
 import Image from "next/image";
 import { api } from "../utils/api";
-import { type PropsWithChildren } from "react";
 import { type NextPage } from "next";
 import Sidebar from "../components/sidebar";
 import { signIn } from "next-auth/react";
-import type { Streamer } from "@prisma/client";
-import { type RouterOutputs } from "../utils/api";
 import mrbeast from "../mrbeast.png";
 
-const GetCalendar = ({
-  following,
-}: PropsWithChildren<{
-  following: RouterOutputs["twitch"]["getFollowing"];
-}>) => {
-  const { data: sessionData, status: sessionStatus } = useSession();
+const GetCalendar = () => {
   const calendar = api.twitch.getCalendar.useQuery();
-
-  console.log("calendar, ", calendar.data);
   return (
     <>
       <div className="w-full">
@@ -45,7 +35,7 @@ const Home: NextPage = () => {
         <Nav />
         <div className="flex w-full">
           <Sidebar following={following.data} />
-          <GetCalendar following={following.data ?? []} />
+          <GetCalendar />
         </div>
       </>
     );
@@ -60,7 +50,11 @@ const Home: NextPage = () => {
             </div>
             <button
               className="semibold z-10 flex max-w-fit items-center self-center rounded-md border-2 border-purple-400 bg-[#32145d]/90 p-3 px-5 text-white no-underline transition hover:bg-[#481f84e6]"
-              onClick={() => void signIn("twitch")}
+              onClick={() =>
+                void signIn("twitch", {
+                  redirect: false,
+                })
+              }
             >
               <span>
                 Sign in with <span className="font-bold">Twitch</span>

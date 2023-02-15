@@ -1,11 +1,12 @@
-import type { Streamer } from "@prisma/client";
 import Image from "next/image";
-import { type RouterOutputs } from "../utils/api";
-import StreamerInList from "./streamerInList";
+import { useState } from "react";
+import { z } from "zod";
 import { api } from "../utils/api";
+import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
+import { useLocalStorage } from "../utils/useLocalStorage";
 export const Live: React.FC<{
-  open: boolean;
-}> = ({ open }) => {
+  big: boolean;
+}> = ({ big }) => {
   const liveStatuses = api.twitch.getLiveStatus.useQuery();
 
   function formattedGameName(gameName: string) {
@@ -32,20 +33,39 @@ export const Live: React.FC<{
     }
     return formatted;
   }
+  const [open, setOpen] = useLocalStorage("liveOpen", z.boolean(), true);
   return (
     <>
-      <div className={`my-2 ${open ? "" : "w-full"}`}>
-        {open && <h3 className="p-4 text-lg font-bold text-white">Live</h3>}
-        {liveStatuses?.data?.map((status, key) => (
+      {big && (
+        <>
+          <button
+            onClick={() => setOpen(!open)}
+            className="w-full hover:bg-white/5"
+          >
+            <h3 className="flex items-center justify-between p-4 py-1 text-left text-lg font-bold text-white">
+              <span className="pr-2">Live</span>
+              <div className="relative top-[1px]">
+                {open ? (
+                  <ChevronDownIcon height={20} strokeWidth={0.8} />
+                ) : (
+                  <ChevronUpIcon height={20} strokeWidth={0.8} />
+                )}
+              </div>
+            </h3>
+          </button>
+        </>
+      )}
+      {open ? (
+        liveStatuses?.data?.map((status, key) => (
           <div
             key={key}
             className={
-              open
+              big
                 ? "relative flex cursor-default items-center justify-between px-4 py-1.5 align-middle text-white hover:bg-white/10"
                 : "relative w-full cursor-default justify-center py-1.5 align-middle text-white hover:bg-white/10"
             }
           >
-            {open ? (
+            {big ? (
               <>
                 <div className="flex items-center">
                   <div className="relative mr-3 h-full overflow-hidden rounded-full border-2 border-red-700">
@@ -73,7 +93,7 @@ export const Live: React.FC<{
             ) : (
               <>
                 <div className="flex items-center justify-center ">
-                  <div className="relative  h-full overflow-hidden rounded-full border-2 border-red-700">
+                  <div className="relative h-full overflow-hidden rounded-full border-2 border-red-700">
                     <Image
                       width={30}
                       height={30}
@@ -85,8 +105,10 @@ export const Live: React.FC<{
               </>
             )}
           </div>
-        ))}
-      </div>
+        ))
+      ) : (
+        <></>
+      )}
     </>
   );
 };
