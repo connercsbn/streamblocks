@@ -2,6 +2,7 @@ import { type PropsWithChildren } from "react";
 import Image from "next/image";
 import type { Streamer } from "@prisma/client";
 import { useState } from "react";
+import Modal from "./modal";
 
 export default function Streamer({
   streamer,
@@ -39,12 +40,14 @@ export default function Streamer({
       )}
       <div className="absolute right-4">
         <div className="flex">
+          <Modal streamer={streamer} />
           {!top && isHovering && size === "full" && (
-            <span className="relative top-0.5 ml-2">
-              <MyButton onClick={() => handleToggleFavorite(streamer.id)}>
-                <PlusButton />
-              </MyButton>
-            </span>
+            <></>
+            // <span className="relative top-0.5 ml-2">
+            //   <MyButton onClick={() => handleToggleFavorite(streamer.id)}>
+            //     <PlusButton />
+            //   </MyButton>
+            // </span>
           )}
           {top && isHovering && size === "full" && (
             <span className="relative top-0.5 ml-2">

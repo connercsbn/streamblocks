@@ -1,5 +1,4 @@
 import NextAuth, { type NextAuthOptions } from "next-auth";
-import DiscordProvider from "next-auth/providers/discord";
 import TwitchProvider from "next-auth/providers/twitch";
 // Prisma adapter for NextAuth, optional and can be removed
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
@@ -24,6 +23,19 @@ export const authOptions: NextAuthOptions = {
     TwitchProvider({
       clientId: env.TWITCH_CLIENT_ID,
       clientSecret: env.TWITCH_CLIENT_SECRET,
+      authorization: {
+        params: {
+          scope: "openid user:read:email",
+          claims: {
+            id_token: {
+              email: null,
+              picture: null,
+              preferred_username: null,
+            },
+          },
+        },
+      },
+      idToken: true,
       profile(profile: TwitchProfile) {
         console.log(profile);
         return {

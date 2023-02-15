@@ -63,6 +63,7 @@ model Streamer {
   imageUrl     String
   description  String    @db.Text()
   userId       String
+  color        String?
   viewCount    Int
   isFavorite   Boolean   @default(false)
   isOnCalendar Boolean   @default(true)
@@ -73,11 +74,25 @@ model Streamer {
 }
 
 model Calendar {
-  id          Int               @id @default(autoincrement())
-  segments    CalendarSegment[]
-  lastUpdated String
-  streamerId  Int               @unique
-  Streamer    Streamer          @relation(fields: [streamerId], references: [id], onDelete: Cascade)
+  id                 Int                 @id @default(autoincrement())
+  segments           CalendarSegment[]
+  unofficialSchedule UnofficialSchedule?
+  lastFetched        DateTime            @default(now())
+  streamerId         Int                 @unique
+  Streamer           Streamer            @relation(fields: [streamerId], references: [id], onDelete: Cascade)
+}
+
+model UnofficialSchedule {
+  id         Int      @id @default(autoincrement())
+  Sunday     DateTime
+  Monday     DateTime
+  Tuesday    DateTime
+  Wednesday  DateTime
+  Thurday    DateTime
+  Friday     DateTime
+  Saturday   DateTime
+  calendarId Int      @unique
+  Calendar   Calendar @relation(fields: [calendarId], references: [id], onDelete: Cascade)
 }
 
 model CalendarSegment {

@@ -109,30 +109,28 @@ export type twitch_calendar_error = z.inferFormattedError<
 >;
 
 const liveFetch = async (id: string): Promise<twitch_live_response> => {
-  console.log(`param for live_fetch: ${id}`);
+  // console.log(`param for live_fetch: ${id}`);
   const res = (
     await fetch(`https://api.twitch.tv/helix/streams?user_id=${id}`, opts)
   ).json();
-  console.log(await res);
   return TwitchLiveSchema.parse(await res);
 };
 
 const followFetch = async (id: string): Promise<twitch_follow_response> => {
-  console.log(`param for follow_fetch: ${id}`);
+  // console.log(`param for follow_fetch: ${id}`);
   const res = (
     await fetch(
       `https://api.twitch.tv/helix/users/follows?from_id=${id}&first=100`,
       opts
     )
   ).json();
-  console.log(await res);
   return TwitchFollowSchema.parse(await res);
 };
 
 const calendarFetch = async (
   param: string
 ): Promise<twitch_calendar_response | undefined> => {
-  console.log(`param for calendar_fetch: ${param}`);
+  // console.log(`param for calendar_fetch: ${param}`);
   const res = (
     await fetch(
       `https://api.twitch.tv/helix/schedule?broadcaster_id=${param}`,
@@ -141,14 +139,13 @@ const calendarFetch = async (
   ).json();
   const calendarData = TwitchCalendarSchema.safeParse(await res);
   if (!calendarData.success) {
-    console.log(calendarData.error.format());
     return;
   }
   return calendarData.data;
 };
 
 const userFetch = async (param: string): Promise<twitch_user> => {
-  console.log("param for user_fetch: ", param);
+  // console.log("param for user_fetch: ", param);
   const res = (
     await fetch(`https://api.twitch.tv/helix/users?id=${param}`, opts)
   ).json();
@@ -181,6 +178,9 @@ export const twitchRouter = createTRPCRouter({
         .flat()
     );
   }),
+  // addUnofficialCalendar: protectedProcedure.mutation(async ({ ctx }) => {
+  //   const
+  // }),
   addCalendars: protectedProcedure.mutation(async ({ ctx }) => {
     const user = await ctx.prisma.user.findUniqueOrThrow({
       where: { id: ctx.session.user.id },
@@ -211,7 +211,6 @@ export const twitchRouter = createTRPCRouter({
               data: {
                 calendar: {
                   create: {
-                    lastUpdated: new Date().toISOString(),
                     segments: {
                       createMany: {
                         data: segments,

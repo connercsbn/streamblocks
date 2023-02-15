@@ -3,7 +3,6 @@ import { type Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
 import Layout from "../components/layout";
 import "../styles/react-big-calendar.css";
-
 import { api } from "../utils/api";
 
 import "../styles/globals.css";
