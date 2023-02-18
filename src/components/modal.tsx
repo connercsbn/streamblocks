@@ -1,9 +1,10 @@
 import { Fragment, useRef, useState } from "react";
-import { Dialog, Transition } from "@headlessui/react";
+import { Dialog } from "@headlessui/react";
 import type { Streamer } from "@prisma/client";
 import TimePicker from "../components/timepicker";
 import Link from "next/link";
 import Image from "next/image";
+import { PlusButton, X, MyButton } from "./buttons";
 
 export default function Example({ streamer }: { streamer: Streamer }) {
   const [open, setOpen] = useState(false);
@@ -35,12 +36,9 @@ export default function Example({ streamer }: { streamer: Streamer }) {
 
   return (
     <>
-      <div className="m-4 flex justify-center">
-        <button
-          onClick={() => setOpen(!open)}
-          className="relative top-[-20px] h-7 w-7 rounded-full bg-white"
-        ></button>
-      </div>
+      <MyButton color={"yellow"} onClick={() => setOpen(!open)}>
+        <PlusButton />
+      </MyButton>
       <Dialog
         as="div"
         open={open}
@@ -132,20 +130,3 @@ export default function Example({ streamer }: { streamer: Streamer }) {
     </>
   );
 }
-
-const X = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-    className="h-6 w-6"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M6 18L18 6M6 6l12 12"
-    />
-  </svg>
-);

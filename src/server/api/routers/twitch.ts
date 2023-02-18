@@ -239,12 +239,24 @@ export const twitchRouter = createTRPCRouter({
   }),
   getFollowing: protectedProcedure.query(async ({ ctx }) => {
     return (
-      await ctx.prisma.user.findUnique({
+      await ctx.prisma.user.findUniqueOrThrow({
         where: {
           id: ctx.session.user.id,
         },
         include: {
-          streamers: true,
+          streamers: {
+            include: {
+              calendar: {
+                select: {
+                  _count: {
+                    select: {
+                      segments: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       })
     )?.streamers;

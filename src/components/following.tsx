@@ -20,7 +20,9 @@ export const Following: React.FC<{
       .toLowerCase()
       .includes(searchInput.toLowerCase());
   };
-  const regulars = following?.filter((streamer) => !streamer.isFavorite);
+  const regulars = following
+    ?.filter((streamer) => !streamer.isFavorite)
+    .filter(searchFilter);
   return (
     <>
       {big && (
@@ -29,14 +31,29 @@ export const Following: React.FC<{
         </div>
       )}
       <div className={`my-2 ${big ? "" : "w-full"}`}>
-        {regulars?.filter(searchFilter).map((streamer, key) => (
-          <StreamerInList
-            streamer={streamer}
-            key={key}
-            size={big ? "full" : "mini"}
-            handleToggleFavorite={handleToggleStreamer}
-          />
-        ))}
+        {regulars
+          ?.filter((streamer) => Number(streamer.calendar?._count.segments) > 0)
+          .map((streamer, key) => (
+            <StreamerInList
+              streamer={streamer}
+              key={key}
+              size={big ? "full" : "mini"}
+              handleToggleFavorite={handleToggleStreamer}
+            />
+          ))}
+        <div className="my-3 border-[1px] border-dashed border-yellow-300/20"></div>
+        {regulars
+          ?.filter(
+            (streamer) => Number(streamer.calendar?._count.segments) === 0
+          )
+          .map((streamer, key) => (
+            <StreamerInList
+              streamer={streamer}
+              key={key}
+              size={big ? "full" : "mini"}
+              handleToggleFavorite={handleToggleStreamer}
+            />
+          ))}
       </div>
     </>
   );

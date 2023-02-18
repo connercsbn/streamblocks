@@ -2,6 +2,7 @@ import { type PropsWithChildren } from "react";
 import Image from "next/image";
 import type { Streamer } from "@prisma/client";
 import { useState } from "react";
+import { MyButton, MinusButton } from "./buttons";
 import Modal from "./modal";
 
 export default function Streamer({
@@ -11,7 +12,13 @@ export default function Streamer({
   handleToggleFavorite,
   handleToggleCalendar,
 }: PropsWithChildren<{
-  streamer: Streamer;
+  streamer: Streamer & {
+    calendar: {
+      _count: {
+        segments: number;
+      };
+    } | null;
+  };
   size: "full" | "mini";
   top?: boolean;
   handleToggleFavorite: (streamerId: number) => void;
@@ -20,6 +27,8 @@ export default function Streamer({
   const [isHovering, setIsHovering] = useState(false);
   const fullClasses = "px-4";
   const miniClasses = "w-full justify-center";
+  const hasCalendar = !!streamer.calendar?._count.segments;
+  console.log(streamer.calendar);
   return (
     <div
       onMouseOver={() => setIsHovering(true)}
@@ -40,18 +49,29 @@ export default function Streamer({
       )}
       <div className="absolute right-4">
         <div className="flex">
-          <Modal streamer={streamer} />
           {!top && isHovering && size === "full" && (
-            <></>
-            // <span className="relative top-0.5 ml-2">
-            //   <MyButton onClick={() => handleToggleFavorite(streamer.id)}>
-            //     <PlusButton />
-            //   </MyButton>
-            // </span>
+            <>
+              {" "}
+              <span className="relative top-0.5 ml-2">
+                {hasCalendar ? (
+                  <MyButton
+                    color={"green"}
+                    onClick={() => handleToggleFavorite(streamer.id)}
+                  >
+                    <PlusButton />
+                  </MyButton>
+                ) : (
+                  <Modal streamer={streamer} />
+                )}
+              </span>
+            </>
           )}
           {top && isHovering && size === "full" && (
             <span className="relative top-0.5 ml-2">
-              <MyButton onClick={() => handleToggleFavorite(streamer.id)}>
+              <MyButton
+                color={"red"}
+                onClick={() => handleToggleFavorite(streamer.id)}
+              >
                 <MinusButton />
               </MyButton>
             </span>
@@ -69,36 +89,6 @@ export default function Streamer({
     </div>
   );
 }
-
-const MyButton = ({
-  onClick,
-  children,
-}: PropsWithChildren<{
-  onClick: () => void;
-  className?: string;
-}>) => {
-  return (
-    <button
-      onClick={onClick}
-      className="relative top-0 right-2 z-10 self-end rounded-full bg-slate-700/80 p-1 text-sm font-bold text-white no-underline transition hover:bg-slate-500/80"
-    >
-      {children}
-    </button>
-  );
-};
-
-const MinusButton = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.4}
-    stroke="currentColor"
-    className="h-4 w-4"
-  >
-    <path strokeLinecap="round" strokeLinejoin="round" d="M18 12H6" />
-  </svg>
-);
 const PlusButton = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
