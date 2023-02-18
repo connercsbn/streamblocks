@@ -9,7 +9,7 @@ import { z } from "zod";
 import { useLocalStorage } from "../utils/useLocalStorage";
 
 const Sidebar: React.FC<{
-  following: RouterOutputs["twitch"]["getFollowing"];
+  following: RouterOutputs["twitch"]["getFollowing"] | undefined;
 }> = ({ following }) => {
   const apiContext = api.useContext();
   const createCalendars = api.twitch.addCalendars.useMutation();

@@ -7,7 +7,7 @@ import { type RouterOutputs } from "../utils/api";
 export const Following: React.FC<{
   big: boolean;
   handleToggleFavorite: (streamerId: number) => void;
-  following: RouterOutputs["twitch"]["getFollowing"];
+  following: RouterOutputs["twitch"]["getFollowing"] | undefined;
 }> = ({ big, following, handleToggleFavorite: handleToggleStreamer }) => {
   const [searchInput, setSearchInput] = useState("");
 

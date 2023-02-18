@@ -5,7 +5,7 @@ import { type RouterOutputs } from "../utils/api";
 import StreamerInList from "./streamerInList";
 export const TopEight: React.FC<{
   big: boolean;
-  following: RouterOutputs["twitch"]["getFollowing"];
+  following: RouterOutputs["twitch"]["getFollowing"] | undefined;
   handleToggleFavorite: (streamerId: number) => void;
   handleToggleCalendar: (streamerId: number) => void;
 }> = ({ big, handleToggleFavorite, handleToggleCalendar, following }) => {
