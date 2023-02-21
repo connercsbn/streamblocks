@@ -3,13 +3,15 @@ import StreamerInList from "./streamerInList";
 import type { ChangeEvent } from "react";
 import { useState } from "react";
 import { type RouterOutputs } from "../utils/api";
+import { api } from "../utils/api";
 
 export const Following: React.FC<{
   big: boolean;
   handleToggleFavorite: (streamerId: number) => void;
-  following: RouterOutputs["twitch"]["getFollowing"] | undefined;
-}> = ({ big, following, handleToggleFavorite: handleToggleStreamer }) => {
+}> = ({ big, handleToggleFavorite: handleToggleStreamer }) => {
   const [searchInput, setSearchInput] = useState("");
+
+  const following = api.twitch.getFollowing.useQuery();
 
   const handleInput = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchInput(e.currentTarget.value);
@@ -20,7 +22,7 @@ export const Following: React.FC<{
       .toLowerCase()
       .includes(searchInput.toLowerCase());
   };
-  const regulars = following
+  const regulars = following?.data
     ?.filter((streamer) => !streamer.isFavorite)
     .filter(searchFilter);
   return (
@@ -32,7 +34,7 @@ export const Following: React.FC<{
       )}
       <div className={`my-2 ${big ? "" : "w-full"}`}>
         {regulars
-          ?.filter((streamer) => Number(streamer.calendar?._count.segments) > 0)
+          ?.filter((streamer) => Number(streamer.calendar?.segments.length) > 0)
           .map((streamer, key) => (
             <StreamerInList
               streamer={streamer}
@@ -44,7 +46,7 @@ export const Following: React.FC<{
         <div className="my-3 border-[1px] border-dashed border-yellow-300/20"></div>
         {regulars
           ?.filter(
-            (streamer) => Number(streamer.calendar?._count.segments) === 0
+            (streamer) => Number(streamer.calendar?.segments.length) === 0
           )
           .map((streamer, key) => (
             <StreamerInList

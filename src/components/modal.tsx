@@ -6,6 +6,7 @@ import type {
   UnofficialSchedule,
 } from "@prisma/client";
 import TimePicker from "../components/timepicker";
+import { CalendarSegment } from "@prisma/client";
 import Link from "next/link";
 import Image from "next/image";
 import { PlusButton, X, MyButton } from "./buttons";
@@ -19,9 +20,7 @@ export default function Example({
       unofficialSchedule: {
         unofficialDays: UnofficialDay[];
       } | null;
-      _count: {
-        segments: number;
-      };
+      segments: CalendarSegment[];
     } | null;
   };
 }) {

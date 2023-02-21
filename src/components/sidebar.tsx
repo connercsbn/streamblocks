@@ -1,17 +1,14 @@
 import Following from "../components/following";
 import Favorites from "./favorites";
-import { type RouterOutputs, api } from "../utils/api";
+import { api } from "../utils/api";
 import useWindowSize from "../utils/useWindowSize";
 import { useState } from "react";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
 import Live from "./live";
 import { z } from "zod";
 import { useLocalStorage } from "../utils/useLocalStorage";
-import { Tooltip } from "react-tooltip";
 
-const Sidebar: React.FC<{
-  following: RouterOutputs["twitch"]["getFollowing"] | undefined;
-}> = ({ following }) => {
+function Sidebar() {
   const apiContext = api.useContext();
   const createCalendars = api.twitch.addCalendars.useMutation();
   const follow = api.twitch.follow.useMutation({
@@ -23,13 +20,6 @@ const Sidebar: React.FC<{
   const { height } = useWindowSize();
   const toggleCalendar = api.twitch.toggleOnCalendar.useMutation({
     onMutate: ({ streamerId }) => {
-      apiContext.twitch.getCalendar.setData(undefined, (data) =>
-        data?.map((streamer) =>
-          streamer.id === streamerId
-            ? { ...streamer, isOnCalendar: !streamer.isOnCalendar }
-            : streamer
-        )
-      );
       apiContext.twitch.getFollowing.setData(undefined, (data) =>
         data?.map((streamer) =>
           streamer.id === streamerId
@@ -45,32 +35,18 @@ const Sidebar: React.FC<{
   const toggleFavorite = api.twitch.toggleFavorite.useMutation({
     onSuccess: async () => {
       await apiContext.twitch.getFollowing.invalidate();
-      await apiContext.twitch.getCalendar.invalidate();
     },
     onMutate: async ({ streamerId }) => {
       await apiContext.twitch.getFollowing.cancel();
       const previousFollowing = apiContext.twitch.getFollowing.getData();
-      const previousCalendar = apiContext.twitch.getCalendar.getData();
-      apiContext.twitch.getFollowing.setData(undefined, (data) => {
-        const tempData = data?.slice();
-        for (const streamer of tempData ?? []) {
-          if (streamer.id === streamerId) {
-            streamer.isFavorite = !streamer.isFavorite;
-          }
-        }
-        return tempData;
-      });
-      apiContext.twitch.getCalendar.setData(undefined, (data) => {
-        const tempData = data?.slice();
-        for (const streamer of tempData ?? []) {
-          if (streamer.id === streamerId) {
-            streamer.isFavorite = !streamer.isFavorite;
-          }
-        }
-        console.log(tempData);
-        return tempData?.filter((streamer) => streamer.isFavorite);
-      });
-      return { previousFollowing, previousCalendar };
+      apiContext.twitch.getFollowing.setData(undefined, (data) =>
+        (data || [])?.map((streamer) =>
+          streamer.id === streamerId
+            ? { ...streamer, isFavorite: !streamer.isFavorite }
+            : streamer
+        )
+      );
+      return { previousFollowing };
     },
   });
   const handleToggleCalendar = (streamerId: number) => {
@@ -132,7 +108,6 @@ const Sidebar: React.FC<{
             <>
               <Favorites
                 big={open}
-                following={following}
                 handleToggleFavorite={handleToggleFavorite}
                 handleToggleCalendar={handleToggleCalendar}
               />
@@ -156,11 +131,7 @@ const Sidebar: React.FC<{
             </button>
           )}
           {followingOpen && (
-            <Following
-              big={open}
-              following={following}
-              handleToggleFavorite={handleToggleFavorite}
-            />
+            <Following big={open} handleToggleFavorite={handleToggleFavorite} />
           )}
           {open && (
             <>
@@ -176,6 +147,6 @@ const Sidebar: React.FC<{
       </div>
     </>
   );
-};
+}
 
 export default Sidebar;

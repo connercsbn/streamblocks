@@ -5,6 +5,7 @@ import type {
   UnofficialDay,
   UnofficialSchedule,
 } from "@prisma/client";
+import { CalendarSegment } from "@prisma/client";
 import { useState } from "react";
 import { MyButton, MinusButton } from "./buttons";
 import Modal from "./modal";
@@ -21,9 +22,7 @@ export default function Streamer({
       unofficialSchedule: {
         unofficialDays: UnofficialDay[];
       } | null;
-      _count: {
-        segments: number;
-      };
+      segments: CalendarSegment[];
     } | null;
   };
   size: "full" | "mini";
@@ -34,7 +33,7 @@ export default function Streamer({
   const [isHovering, setIsHovering] = useState(false);
   const fullClasses = "px-4";
   const miniClasses = "w-full justify-center";
-  const hasCalendar = !!streamer.calendar?._count.segments;
+  const hasCalendar = !!streamer.calendar?.segments.length;
   return (
     <div
       onMouseOver={() => setIsHovering(true)}

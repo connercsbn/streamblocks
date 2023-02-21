@@ -296,7 +296,15 @@ export const twitchRouter = createTRPCRouter({
           id: ctx.session.user.id,
         },
         include: {
-          streamers: { include: { calendar: { include: { segments: true } } } },
+          streamers: {
+            include: {
+              calendar: {
+                include: {
+                  segments: true,
+                },
+              },
+            },
+          },
         },
       })
     )?.streamers.filter((streamer) => streamer.isFavorite);
@@ -312,11 +320,7 @@ export const twitchRouter = createTRPCRouter({
             include: {
               calendar: {
                 select: {
-                  _count: {
-                    select: {
-                      segments: true,
-                    },
-                  },
+                  segments: true,
                   unofficialSchedule: {
                     select: {
                       unofficialDays: true,

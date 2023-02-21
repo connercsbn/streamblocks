@@ -8,36 +8,17 @@ import Sidebar from "../components/sidebar";
 import { signIn } from "next-auth/react";
 import mrbeast from "../mrbeast.png";
 
-const GetCalendar = () => {
-  const calendar = api.twitch.getCalendar.useQuery();
-  return (
-    <>
-      <div className="w-full">
-        <MyCalendar
-          events={calendar?.data?.filter(
-            (streamer) =>
-              streamer.isOnCalendar &&
-              streamer.isFavorite &&
-              streamer.calendar?.segments.length
-          )}
-        />
-      </div>
-    </>
-  );
-};
-
 const Home: NextPage = () => {
   const { data: sessionData, status: sessionStatus } = useSession();
-  const following = api.twitch.getFollowing.useQuery(undefined, {
-    enabled: !!sessionData?.user,
-  });
   if (sessionData?.user) {
     return (
       <>
         <Nav />
         <div className="flex w-full">
-          <Sidebar following={following.data} />
-          <GetCalendar />
+          <Sidebar />
+          <div className="w-full">
+            <MyCalendar />
+          </div>
         </div>
       </>
     );
