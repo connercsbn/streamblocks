@@ -7,7 +7,10 @@ import { useLocalStorage } from "../utils/useLocalStorage";
 export const Live: React.FC<{
   big: boolean;
 }> = ({ big }) => {
-  const liveStatuses = api.twitch.getLiveStatus.useQuery();
+  const liveStatuses = api.twitch.getLiveStatus.useQuery(undefined, {
+    refetchOnWindowFocus: false,
+    refetchInterval: 1000 * 60 * 2,
+  });
 
   function formattedGameName(gameName: string) {
     const maxLength = 20;

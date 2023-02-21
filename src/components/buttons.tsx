@@ -80,7 +80,6 @@ const MyButton = ({
       tooltipContent = "Remove from favorites";
       break;
   }
-  console.log(color, colorProperties);
   return (
     <>
       <button
