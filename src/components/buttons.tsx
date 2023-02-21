@@ -1,6 +1,8 @@
+"use client";
 import { type PropsWithChildren } from "react";
-import { Tooltip } from "react-tooltip";
 import { createPortal } from "react-dom";
+
+const Tooltip = (await import("react-tooltip")).Tooltip;
 
 function PlusButton() {
   return (

@@ -1,4 +1,5 @@
 import { useSession } from "next-auth/react";
+import { Tooltip } from "react-tooltip";
 import Nav from "../components/nav";
 import MyCalendar from "../components/calendar";
 import Image from "next/image";

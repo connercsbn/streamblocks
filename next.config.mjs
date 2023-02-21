@@ -14,6 +14,13 @@ const config = {
     locales: ["en"],
     defaultLocale: "en",
   },
+  webpack: (config) => {
+    config.experiments = {
+      topLevelAwait: true,
+      layers: true,
+    };
+    return config;
+  },
   images: {
     remotePatterns: [
       {
