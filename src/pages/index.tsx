@@ -16,7 +16,9 @@ const GetCalendar = () => {
         <MyCalendar
           events={calendar?.data?.filter(
             (streamer) =>
-              streamer.isOnCalendar && streamer.calendar?.segments.length
+              streamer.isOnCalendar &&
+              streamer.isFavorite &&
+              streamer.calendar?.segments.length
           )}
         />
       </div>

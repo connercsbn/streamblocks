@@ -1,4 +1,6 @@
 import { type PropsWithChildren } from "react";
+import { Tooltip } from "react-tooltip";
+import { createPortal } from "react-dom";
 
 function PlusButton() {
   return (
@@ -58,31 +60,44 @@ const MyButton = ({
   color: string;
 }>) => {
   let colorProperties = "";
+  let tooltipContent = "";
   switch (color) {
     case "green":
       colorProperties =
         "hover:border-green-300 hover:bg-green-300/20 hover:border-green-300/40";
+      tooltipContent = "Add to favorites";
       break;
     case "yellow":
       colorProperties =
         "hover:border-yellow-300 hover:bg-yellow-300/20 hover:border-yellow-300/40";
+      tooltipContent = "Manually input schedule and add to favorites";
       break;
     case "red":
       colorProperties =
         "hover:border-red-300 hover:bg-red-300/20 hover:border-red-300/40";
+      tooltipContent = "Remove from favorites";
       break;
   }
   console.log(color, colorProperties);
   return (
-    <button
-      onClick={onClick}
-      className={
-        "relative top-0 right-2 z-10 self-end rounded-full border-2 border-transparent bg-slate-700/80 p-1 text-sm font-bold text-white no-underline transition" +
-        colorProperties
-      }
-    >
-      {children}
-    </button>
+    <>
+      <button
+        onClick={onClick}
+        data-tooltip-id="mytooltip"
+        data-tooltip-content={tooltipContent}
+        data-tooltip-delay-show={200}
+        className={
+          "relative top-0 right-2 z-10 self-end rounded-full border-2 border-transparent bg-slate-700/80 p-1 text-sm font-bold text-white no-underline transition" +
+          colorProperties
+        }
+      >
+        {children}
+      </button>
+      {createPortal(
+        <Tooltip className="z-50" id="mytooltip" place="right" />,
+        document.body
+      )}
+    </>
   );
 };
 export { PlusButton, MinusButton, X, MyButton };

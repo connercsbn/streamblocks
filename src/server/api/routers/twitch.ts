@@ -178,9 +178,73 @@ export const twitchRouter = createTRPCRouter({
         .flat()
     );
   }),
-  // addUnofficialCalendar: protectedProcedure.mutation(async ({ ctx }) => {
-  //   const
-  // }),
+  addUnofficialCalendar: protectedProcedure
+    .input(
+      z.object({
+        streamerId: z.number(),
+        unofficialSchedule: z.array(
+          z.object({
+            start: z.date().nullable(),
+            end: z.date().nullable(),
+            day: z.string(),
+          })
+        ),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const toAdd = [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+      ].map((currentDayOfWeek) => {
+        const currentDayGiven = input.unofficialSchedule.find(
+          (dayToAdd) => dayToAdd.day === currentDayOfWeek
+        );
+        if (currentDayGiven) {
+          const { day, start, end } = currentDayGiven;
+          return {
+            data: {
+              day,
+              start,
+              end,
+            },
+            where: {
+              day,
+            },
+          };
+        }
+        return {
+          data: {
+            start: null,
+            end: null,
+            day: currentDayOfWeek,
+          },
+          where: { day: currentDayOfWeek },
+        };
+      });
+      await ctx.prisma.streamer.update({
+        where: {
+          id: input.streamerId,
+        },
+        data: {
+          calendar: {
+            update: {
+              unofficialSchedule: {
+                update: {
+                  unofficialDays: {
+                    updateMany: toAdd,
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+    }),
   addCalendars: protectedProcedure.mutation(async ({ ctx }) => {
     const user = await ctx.prisma.user.findUniqueOrThrow({
       where: { id: ctx.session.user.id },
@@ -196,7 +260,7 @@ export const twitchRouter = createTRPCRouter({
               segmentId: id,
               startTime: start_time,
               endTime: end_time,
-              title,
+              title: title ?? "No title",
             };
           }
         ) ?? [];
@@ -251,6 +315,11 @@ export const twitchRouter = createTRPCRouter({
                   _count: {
                     select: {
                       segments: true,
+                    },
+                  },
+                  unofficialSchedule: {
+                    select: {
+                      unofficialDays: true,
                     },
                   },
                 },

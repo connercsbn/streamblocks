@@ -7,6 +7,7 @@ import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
 import Live from "./live";
 import { z } from "zod";
 import { useLocalStorage } from "../utils/useLocalStorage";
+import { Tooltip } from "react-tooltip";
 
 const Sidebar: React.FC<{
   following: RouterOutputs["twitch"]["getFollowing"] | undefined;
@@ -49,15 +50,27 @@ const Sidebar: React.FC<{
     onMutate: async ({ streamerId }) => {
       await apiContext.twitch.getFollowing.cancel();
       const previousFollowing = apiContext.twitch.getFollowing.getData();
+      const previousCalendar = apiContext.twitch.getCalendar.getData();
       apiContext.twitch.getFollowing.setData(undefined, (data) => {
-        for (const streamer of data ?? []) {
+        const tempData = data?.slice();
+        for (const streamer of tempData ?? []) {
           if (streamer.id === streamerId) {
             streamer.isFavorite = !streamer.isFavorite;
           }
         }
-        return data;
+        return tempData;
       });
-      return { previousFollowing };
+      apiContext.twitch.getCalendar.setData(undefined, (data) => {
+        const tempData = data?.slice();
+        for (const streamer of tempData ?? []) {
+          if (streamer.id === streamerId) {
+            streamer.isFavorite = !streamer.isFavorite;
+          }
+        }
+        console.log(tempData);
+        return tempData?.filter((streamer) => streamer.isFavorite);
+      });
+      return { previousFollowing, previousCalendar };
     },
   });
   const handleToggleCalendar = (streamerId: number) => {
@@ -83,8 +96,8 @@ const Sidebar: React.FC<{
       <div
         style={height ? { height: height - 56 } : {}}
         className={`${
-          open ? "w-80" : "w-16 pt-10"
-        } relative overflow-scroll bg-slate-900`}
+          open ? "w-96" : "w-16 pt-10"
+        } relative overflow-y-scroll bg-slate-900`}
       >
         <button
           onClick={() => setOpen(!open)}

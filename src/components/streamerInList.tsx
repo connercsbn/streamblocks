@@ -1,6 +1,10 @@
 import { type PropsWithChildren } from "react";
 import Image from "next/image";
-import type { Streamer } from "@prisma/client";
+import type {
+  Streamer,
+  UnofficialDay,
+  UnofficialSchedule,
+} from "@prisma/client";
 import { useState } from "react";
 import { MyButton, MinusButton } from "./buttons";
 import Modal from "./modal";
@@ -14,6 +18,9 @@ export default function Streamer({
 }: PropsWithChildren<{
   streamer: Streamer & {
     calendar: {
+      unofficialSchedule: {
+        unofficialDays: UnofficialDay[];
+      } | null;
       _count: {
         segments: number;
       };
@@ -28,7 +35,6 @@ export default function Streamer({
   const fullClasses = "px-4";
   const miniClasses = "w-full justify-center";
   const hasCalendar = !!streamer.calendar?._count.segments;
-  console.log(streamer.calendar);
   return (
     <div
       onMouseOver={() => setIsHovering(true)}
