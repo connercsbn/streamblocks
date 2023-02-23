@@ -1,14 +1,10 @@
 import { type PropsWithChildren } from "react";
 import Image from "next/image";
-import type {
-  Streamer,
-  UnofficialDay,
-  UnofficialSchedule,
-} from "@prisma/client";
-import { CalendarSegment } from "@prisma/client";
+import type { Streamer } from "@prisma/client";
 import { useState } from "react";
 import { MyButton, MinusButton } from "./buttons";
 import Modal from "./modal";
+import { type RouterOutputs } from "../utils/api";
 
 export default function Streamer({
   streamer,
@@ -17,14 +13,7 @@ export default function Streamer({
   handleToggleFavorite,
   handleToggleCalendar,
 }: PropsWithChildren<{
-  streamer: Streamer & {
-    calendar: {
-      unofficialSchedule: {
-        unofficialDays: UnofficialDay[];
-      } | null;
-      segments: CalendarSegment[];
-    } | null;
-  };
+  streamer: RouterOutputs["twitch"]["getFollowing"][0];
   size: "full" | "mini";
   top?: boolean;
   handleToggleFavorite: (streamerId: number) => void;

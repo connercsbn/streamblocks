@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { contextProps } from "@trpc/react-query/shared";
+import { Input } from "postcss";
 
 const opts = {
   method: "GET",
@@ -242,6 +243,23 @@ export const twitchRouter = createTRPCRouter({
               },
             },
           },
+        },
+      });
+    }),
+  setColor: protectedProcedure
+    .input(
+      z.object({
+        color: z.string(),
+        streamerId: z.number(),
+      })
+    )
+    .mutation(async ({ ctx, input: { color, streamerId } }) => {
+      await ctx.prisma.streamer.update({
+        where: {
+          id: streamerId,
+        },
+        data: {
+          color: color,
         },
       });
     }),

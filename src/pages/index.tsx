@@ -1,9 +1,7 @@
 import { useSession } from "next-auth/react";
-import { Tooltip } from "react-tooltip";
 import Nav from "../components/nav";
 import MyCalendar from "../components/calendar";
 import Image from "next/image";
-import { api } from "../utils/api";
 import { type NextPage } from "next";
 import Sidebar from "../components/sidebar";
 import { signIn } from "next-auth/react";

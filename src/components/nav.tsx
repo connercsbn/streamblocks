@@ -34,20 +34,19 @@ export default function Nav() {
             </Link>
           ))}
         </div>
-        <div className="top-0 self-center overflow-visible">
+        <div className="relative top-0 aspect-square h-full">
           {sessionData ? (
             <>
               <button
-                className="inline-flex items-center rounded-lg"
+                className="inline-flex h-full items-center rounded-lg"
                 type="button"
                 onClick={() => setNavOpen(true)}
               >
                 <Image
-                  className="aspect-square h-full rounded-full"
+                  className="aspect-square h-full w-10 rounded-full p-2"
                   src={sessionData.user?.image as string}
                   alt=""
-                  width={40}
-                  height={40}
+                  fill
                 ></Image>
               </button>
               {navOpen && (

@@ -1,12 +1,7 @@
 import { Fragment, useRef, useState } from "react";
 import { Dialog } from "@headlessui/react";
-import type {
-  Streamer,
-  UnofficialDay,
-  UnofficialSchedule,
-} from "@prisma/client";
 import TimePicker from "../components/timepicker";
-import { CalendarSegment } from "@prisma/client";
+import type { RouterOutputs } from "../utils/api";
 import Link from "next/link";
 import Image from "next/image";
 import { PlusButton, X, MyButton } from "./buttons";
@@ -15,14 +10,7 @@ import { api } from "../utils/api";
 export default function Example({
   streamer,
 }: {
-  streamer: Streamer & {
-    calendar: {
-      unofficialSchedule: {
-        unofficialDays: UnofficialDay[];
-      } | null;
-      segments: CalendarSegment[];
-    } | null;
-  };
+  streamer: RouterOutputs["twitch"]["getFollowing"][0];
 }) {
   const [open, setOpen] = useState(false);
   const cancelButtonRef = useRef(null);
@@ -90,8 +78,14 @@ export default function Example({
                         as="h3"
                         className="text-lg font-medium leading-6 text-white"
                       >
-                        <div className="flex items-center">
-                          <div className="mr-4 rounded-xl border-4">
+                        <div className="relative flex items-center">
+                          <input className="absolute inset-0" type="color" />
+                          <div
+                            className="mr-4 rounded-xl border-4"
+                            style={{
+                              borderColor: streamer.color || "#808080",
+                            }}
+                          >
                             <Image
                               alt=""
                               className="rounded-lg"
