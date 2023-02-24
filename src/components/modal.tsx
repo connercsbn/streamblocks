@@ -108,7 +108,6 @@ export function Modal({
   };
 
   if (!streamer) return <></>;
-  if (streamer.displayName === "CS50tv") open = true;
 
   return (
     <>

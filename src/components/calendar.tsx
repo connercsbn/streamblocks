@@ -1,5 +1,5 @@
 import "react-calendar/dist/Calendar.css";
-import { Calendar, momentLocalizer } from "react-big-calendar";
+import { Calendar, momentLocalizer } from "@connerl/react-big-calendar";
 import { api } from "../utils/api";
 import moment from "moment";
 import type { Event } from "react-big-calendar";

@@ -10,6 +10,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@connerl/react-big-calendar": "^1.6.9",
     "@headlessui/react": "^1.7.10",
     "@heroicons/react": "^2.0.15",
     "@next-auth/prisma-adapter": "^1.0.5",
@@ -35,6 +36,7 @@
     "zod": "^3.20.2"
   },
   "devDependencies": {
+    "@types/connerl__react-big-calendar": "npm:@types/react-big-calendar@^1.6.0",
     "@types/node": "^18.11.18",
     "@types/prettier": "^2.7.2",
     "@types/react": "^18.0.26",
