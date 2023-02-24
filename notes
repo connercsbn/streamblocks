@@ -1,0 +1,30 @@
+https://sortablejs.github.io/Sortable/#frameworks
+https://www.coursicle.com/college-schedule-maker/
+
+make calendar events 90% opacity?
+make calendar scrollbar better / theme it
+setting to fix start and end times of calendar
+
+MVP
+1. in addition to checking schedule, also check if they're live currently. add this to calendar as well
+
+FUTURE UPDATES
+1. embedded video
+2. thing that tells you how soon until streamer is live again ("we don't maybe need that but maybe we do")
+3. overlap settings: (overlap completely, overlap a little) | (overlap based on streamer | overlap to show as much of calendar as possible)
+
+
+limited color pallette (kaitlyn makes it?)
+
+tabs
+
+when overlapping, click to show lightbox of overlapping events separately, where you can x any of them out, which reuslts in the original event being grayed out or low opacity or something, but you can click to get it to come back somehow
+
+add ability to edit schedules
+
+manually schedules (high priority)
+
+down the line, maybe add conflict resolving system
+
+event design;
+https://excalidraw.com/#json=FhqXF4kVRYc5niHiaHdz4,IvPnBtQbHsD--8W9inXasg

@@ -1,4 +1,4 @@
-import { Fragment, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Dialog } from "@headlessui/react";
 import TimePicker from "../components/timepicker";
 import type { RouterOutputs } from "../utils/api";
@@ -7,12 +7,46 @@ import Image from "next/image";
 import { PlusButton, X, MyButton } from "./buttons";
 import { api } from "../utils/api";
 
-export default function Example({
+export default function ModalButton({
   streamer,
+  hovering,
 }: {
   streamer: RouterOutputs["twitch"]["getFollowing"][0];
+  hovering: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  return (
+    <>
+      <MyButton
+        hovering={hovering}
+        color="yellow"
+        onClick={() => setOpen(!open)}
+      >
+        <PlusButton />
+      </MyButton>
+      <Modal
+        streamer={streamer}
+        open={open}
+        handleOpen={handleOpen}
+        handleClose={handleClose}
+      />
+    </>
+  );
+}
+
+export function Modal({
+  streamer,
+  open,
+  handleOpen,
+  handleClose,
+}: {
+  streamer: RouterOutputs["twitch"]["getFollowing"][0];
+  open: boolean;
+  handleOpen: () => void;
+  handleClose: () => void;
+}) {
   const cancelButtonRef = useRef(null);
   const getInitialDaysObject = () => {
     const unofficialDays =
@@ -32,11 +66,32 @@ export default function Example({
         await apiContext.twitch.getFollowing.invalidate();
       },
     });
+  const colorMutation = api.twitch.setColor.useMutation({
+    onSuccess: async () => {
+      await apiContext.twitch.getFollowing.invalidate();
+    },
+    onMutate: async ({ streamerId, color }) => {
+      await apiContext.twitch.getFollowing.cancel();
+      const previousFollowing = apiContext.twitch.getFollowing.getData();
+      apiContext.twitch.getFollowing.setData(undefined, (data) =>
+        (data || [])?.map((streamer) =>
+          streamer.id === streamerId ? { ...streamer, color } : streamer
+        )
+      );
+      return { previousFollowing };
+    },
+  });
 
   const updateUnofficialSchedule = () => {
     unofficialScheduleMutation.mutate({
       streamerId: streamer.id,
       unofficialSchedule: daysAdded,
+    });
+  };
+  const updateColor = (color: string, streamerId: number) => {
+    colorMutation.mutate({
+      color,
+      streamerId,
     });
   };
 
@@ -53,18 +108,16 @@ export default function Example({
   };
 
   if (!streamer) return <></>;
+  if (streamer.displayName === "CS50tv") open = true;
 
   return (
     <>
-      <MyButton color={"yellow"} onClick={() => setOpen(!open)}>
-        <PlusButton />
-      </MyButton>
       <Dialog
         as="div"
         open={open}
         className="relative z-10"
         initialFocus={cancelButtonRef}
-        onClose={setOpen}
+        onClose={handleClose}
       >
         <div className="fixed inset-0 bg-white/30" aria-hidden="true" />
         <div className="fixed inset-0 z-10 overflow-y-auto">
@@ -79,7 +132,6 @@ export default function Example({
                         className="text-lg font-medium leading-6 text-white"
                       >
                         <div className="relative flex items-center">
-                          <input className="absolute inset-0" type="color" />
                           <div
                             className="mr-4 rounded-xl border-4"
                             style={{
@@ -112,6 +164,18 @@ export default function Example({
                         Now that&apos;s a vibe...
                       </p>
                       <div className="mx-auto min-w-min pt-7 text-white ">
+                        <div className="mx-auto flex w-2/3 items-center justify-around py-2">
+                          <label htmlFor="colorPicker">Pick color</label>
+                          <input
+                            name="colorPicker"
+                            onChange={(e) =>
+                              updateColor(e.target.value, streamer.id)
+                            }
+                            id="colorPicker"
+                            className=""
+                            type="color"
+                          />
+                        </div>
                         {Object.keys(daysAdded).map((day, key) => (
                           <TimePicker
                             key={key}
@@ -124,7 +188,7 @@ export default function Example({
                     </div>
                   </div>
                   <button
-                    onClick={() => setOpen(false)}
+                    onClick={handleClose}
                     className="top-0 right-0 h-8 w-8 text-white"
                   >
                     <X />

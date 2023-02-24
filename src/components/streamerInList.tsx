@@ -29,7 +29,7 @@ export default function Streamer({
       onMouseLeave={() => setIsHovering(false)}
       className={`relative flex cursor-default ${
         size === "full" ? fullClasses : miniClasses
-      } py-1.5 align-middle text-white hover:bg-white/10`}
+      } group py-1.5 align-middle text-white hover:bg-white/10`}
     >
       <div
         className={`relative ${
@@ -43,28 +43,30 @@ export default function Streamer({
       )}
       <div className="absolute right-4">
         <div className="flex">
-          {!top && isHovering && size === "full" && (
+          {!top && size === "full" && (
             <>
               {" "}
-              <span className="relative top-0.5 ml-2">
+              <span className="relative top-0.5 ml-2 hidden group-hover:inline">
                 {hasCalendar ? (
                   <MyButton
-                    color={"green"}
+                    color="green"
                     onClick={() => handleToggleFavorite(streamer.id)}
+                    hovering={isHovering}
                   >
                     <PlusButton />
                   </MyButton>
                 ) : (
-                  <Modal streamer={streamer} />
+                  <Modal streamer={streamer} hovering={isHovering} />
                 )}
               </span>
             </>
           )}
-          {top && isHovering && size === "full" && (
-            <span className="relative top-0.5 ml-2">
+          {top && size === "full" && (
+            <span className="relative top-0.5 ml-2 hidden group-hover:inline">
               <MyButton
-                color={"red"}
+                color="red"
                 onClick={() => handleToggleFavorite(streamer.id)}
+                hovering={isHovering}
               >
                 <MinusButton />
               </MyButton>

@@ -110,7 +110,7 @@ export type twitch_calendar_error = z.inferFormattedError<
 >;
 
 const liveFetch = async (id: string): Promise<twitch_live_response> => {
-  console.log(`param for live_fetch: ${id}`);
+  // console.log(`param for live_fetch: ${id}`);
   const res = (
     await fetch(`https://api.twitch.tv/helix/streams?user_id=${id}`, opts)
   ).json();

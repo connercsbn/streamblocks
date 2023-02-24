@@ -56,10 +56,13 @@ const MyButton = ({
   onClick,
   children,
   color,
+  className,
+  hovering,
 }: PropsWithChildren<{
   onClick: () => void;
   className?: string;
   color: string;
+  hovering?: boolean;
 }>) => {
   let colorProperties = "";
   let tooltipContent = "";
@@ -89,15 +92,17 @@ const MyButton = ({
         data-tooltip-delay-show={200}
         className={
           "relative top-0 right-2 z-10 self-end rounded-full border-2 border-transparent bg-slate-700/80 p-1 text-sm font-bold text-white no-underline transition" +
-          colorProperties
+          colorProperties +
+          (className ?? "")
         }
       >
         {children}
       </button>
-      {createPortal(
-        <Tooltip className="z-50" id="mytooltip" place="right" />,
-        document.body
-      )}
+      {hovering &&
+        createPortal(
+          <Tooltip className="z-50" id="mytooltip" place="right" />,
+          document.body
+        )}
     </>
   );
 };
