@@ -1,10 +1,12 @@
 import "react-calendar/dist/Calendar.css";
 import { Calendar, momentLocalizer } from "@connerl/react-big-calendar";
 import { api } from "../utils/api";
+import { datetime, RRule, RRuleSet, rrulestr, WeekdayStr } from "rrule";
 import moment from "moment";
 import type { Event } from "react-big-calendar";
 import overlapfunction from "../utils/overlap";
 import useWindowSize from "../utils/useWindowSize";
+import { date } from "zod";
 
 const localizer = momentLocalizer(moment);
 
@@ -43,20 +45,67 @@ export default function MyCalendar() {
   ) {
     updateCalendars.mutate();
   }
+  const today = new Date();
 
   const formattedEvents = (following?.data ?? [])
-    .filter((streamer) => streamer.isOnCalendar && streamer.isFavorite)
+    .filter(
+      (streamer) =>
+        (streamer.isOnCalendar && streamer.isFavorite) ||
+        streamer.calendar?.unofficialSchedule?.unofficialDays.length
+    )
     .map(({ calendar, displayName, isOnCalendar }, number) => {
-      return (calendar?.segments ?? []).map(
-        ({ startTime, endTime, title }) => ({
-          start: new Date(startTime),
-          end: new Date(endTime),
-          title: `${displayName}` + (title ? ": " + title : ""),
-          streamerOrder: number,
-          streamer: displayName,
-          isOnCalendar,
-        })
+      if (calendar?.segments.length) {
+        const firstThing = (calendar?.segments ?? []).map(
+          ({ startTime, endTime, title }) => ({
+            start: new Date(startTime),
+            end: new Date(endTime),
+            title: `${displayName}` + (title ? ": " + title : ""),
+            streamerOrder: number,
+            streamer: displayName,
+            isOnCalendar,
+          })
+        );
+        return firstThing;
+      }
+      const thing = calendar?.unofficialSchedule?.unofficialDays.flatMap(
+        (unofficialDay) => {
+          return new RRule({
+            freq: RRule.WEEKLY,
+            byweekday: unofficialDay.day
+              .toUpperCase()
+              .slice(0, 2) as WeekdayStr,
+            dtstart: new Date(
+              today.getFullYear(),
+              today.getMonth() - 1,
+              today.getDay()
+            ),
+            until: new Date(
+              today.getFullYear(),
+              today.getMonth() + 2,
+              today.getDay()
+            ),
+          })
+            .all()
+            .map((date) => {
+              const start = new Date(date);
+              const end = new Date(date);
+              start.setHours(unofficialDay?.start?.getHours() ?? 0);
+              start.setMinutes(unofficialDay?.start?.getMinutes() ?? 0);
+              end.setHours(unofficialDay?.end?.getHours() ?? 0);
+              end.setMinutes(unofficialDay?.end?.getMinutes() ?? 0);
+              console.log({ start, end });
+              return {
+                start: start,
+                end: end,
+                title: displayName,
+                streamerOrder: number,
+                streamer: displayName,
+                isOnCalendar: true,
+              };
+            });
+        }
       );
+      return thing;
     })
     .flat()
     .filter(Boolean) as (Event & {

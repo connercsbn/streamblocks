@@ -139,7 +139,7 @@ const Clock = ({
     if (timeSlot === "night") {
       handleSetDays(day.day, null, totalTime);
     }
-  }, [totalTime, day, timeSlot, handleSetDays]);
+  }, [totalTime, day.day]);
 
   return (
     <>
