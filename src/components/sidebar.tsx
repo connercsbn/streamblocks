@@ -141,6 +141,12 @@ function Sidebar() {
               >
                 Load streamers you follow
               </button>
+              <button
+                className="text-md relative my-4 self-end rounded-lg bg-white/10 p-2 px-5 font-bold text-white no-underline transition hover:bg-white/20"
+                onClick={() => createCalendars.mutate()}
+              >
+                Add calendars
+              </button>
             </>
           )}
         </div>

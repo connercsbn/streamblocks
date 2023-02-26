@@ -302,6 +302,27 @@ export const twitchRouter = createTRPCRouter({
             };
           }
         ) ?? [];
+      const segmentsInDb = (
+        await ctx.prisma.streamer.findUniqueOrThrow({
+          where: {
+            id: streamer.id,
+          },
+          include: {
+            calendar: {
+              include: {
+                segments: true,
+              },
+            },
+          },
+        })
+      ).calendar?.segments;
+      const segmentsNotInDb = segments.filter(
+        (segment) =>
+          !segmentsInDb?.find(
+            (segmentInDb) => segmentInDb.segmentId == segment.segmentId
+          )
+      );
+      console.log({ segmentsNotInDb });
       await ctx.prisma.user.update({
         where: { id: user.id },
         data: {
@@ -312,12 +333,13 @@ export const twitchRouter = createTRPCRouter({
               },
               data: {
                 calendar: {
-                  create: {
+                  update: {
                     segments: {
                       createMany: {
-                        data: segments,
+                        data: segmentsNotInDb ?? [],
                       },
                     },
+                    lastFetched: new Date(),
                   },
                 },
               },
@@ -359,6 +381,7 @@ export const twitchRouter = createTRPCRouter({
               calendar: {
                 select: {
                   segments: true,
+                  lastFetched: true,
                   unofficialSchedule: {
                     select: {
                       unofficialDays: true,

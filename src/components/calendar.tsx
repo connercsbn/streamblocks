@@ -32,6 +32,18 @@ export default function MyCalendar() {
   const { height } = useWindowSize();
   const following = api.twitch.getFollowing.useQuery();
 
+  const updateCalendars = api.twitch.addCalendars.useMutation();
+  if (
+    following.data?.some(
+      (streamer) =>
+        new Date().getTime() - (streamer.calendar?.lastFetched.getTime() ?? 0) <
+        // one day in millis
+        86_400_000
+    )
+  ) {
+    updateCalendars.mutate();
+  }
+
   const formattedEvents = (following?.data ?? [])
     .filter((streamer) => streamer.isOnCalendar && streamer.isFavorite)
     .map(({ calendar, displayName, isOnCalendar }, number) => {
