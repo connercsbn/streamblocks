@@ -73,7 +73,7 @@ function Sidebar() {
         style={height ? { height: height - 56 } : {}}
         className={`${
           open ? "w-96" : "w-16 pt-10"
-        } relative overflow-y-scroll bg-slate-900`}
+        } relative min-w-min overflow-y-scroll bg-slate-900`}
       >
         <button
           onClick={() => setOpen(!open)}

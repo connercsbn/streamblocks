@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { useEffect } from "react";
 import { Dialog } from "@headlessui/react";
 import TimePicker from "../components/timepicker";
 import type { RouterOutputs } from "../utils/api";
@@ -16,7 +17,9 @@ export default function ModalButton({
 }) {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const handleClose = () => {
+    setOpen(false);
+  };
   return (
     <>
       <MyButton
@@ -48,16 +51,63 @@ export function Modal({
   handleClose: () => void;
 }) {
   const cancelButtonRef = useRef(null);
-  const getInitialDaysObject = () => {
-    const unofficialDays =
-      streamer?.calendar?.unofficialSchedule?.unofficialDays;
-    if (unofficialDays?.length) {
-      console.log({ unofficialDays });
-    }
-    return streamer?.calendar?.unofficialSchedule?.unofficialDays || [];
+
+  const getInitialDays = () => {
+    return [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ].map((handWrittenDay) => {
+      const unofficialDay =
+        streamer.calendar?.unofficialSchedule?.unofficialDays.find(
+          (unofficialDay) => unofficialDay.day === handWrittenDay
+        );
+      if (unofficialDay) {
+        return {
+          day: unofficialDay.day,
+          start: unofficialDay.start,
+          end: unofficialDay.end,
+          enabled: true,
+        };
+      }
+      return {
+        day: handWrittenDay,
+        start: new Date(0, 0, 0, 9),
+        end: new Date(0, 0, 0, 17),
+        enabled: false,
+      };
+    });
+  };
+  const [daysAdded, setDaysAdded] = useState(getInitialDays());
+
+  // useEffect(() => {
+  //   console.log(daysAdded);
+  // }, [daysAdded]);
+
+  const handleToggle = (day: string) => {
+    const newDays = daysAdded.slice();
+    const dayToChange = newDays.find((x) => x.day === day);
+    if (!dayToChange) throw "days were not all populated or something";
+    dayToChange.enabled = !dayToChange.enabled;
+    setDaysAdded(newDays);
   };
 
-  const [daysAdded, setDaysAdded] = useState(getInitialDaysObject());
+  const handleSetDays = (day: string, start: Date | null, end: Date | null) => {
+    const newDays = daysAdded.slice();
+    const dayToChange = newDays.find((x) => x.day === day);
+    if (!dayToChange) throw "days were not all populated or something";
+    dayToChange.start = start ?? dayToChange.start;
+    dayToChange.end = end ?? dayToChange.end;
+    setDaysAdded(newDays);
+  };
+  const handleResetDays = () => {
+    setDaysAdded(getInitialDays());
+  };
+
   const apiContext = api.useContext();
 
   const unofficialScheduleMutation =
@@ -85,7 +135,7 @@ export function Modal({
   const updateUnofficialSchedule = () => {
     unofficialScheduleMutation.mutate({
       streamerId: streamer.id,
-      unofficialSchedule: daysAdded,
+      unofficialSchedule: daysAdded.filter((day) => day.enabled),
     });
   };
   const updateColor = (color: string, streamerId: number) => {
@@ -95,16 +145,8 @@ export function Modal({
     });
   };
 
-  const toggleDay = (day: string, time?: Date) => {
-    setDaysAdded({ ...daysAdded, [day]: time });
-    console.log(daysAdded);
-  };
-
   const handleSave = () => {
     updateUnofficialSchedule();
-  };
-  const handleCancel = () => {
-    setDaysAdded(getInitialDaysObject());
   };
 
   if (!streamer) return <></>;
@@ -116,7 +158,10 @@ export function Modal({
         open={open}
         className="relative z-10"
         initialFocus={cancelButtonRef}
-        onClose={handleClose}
+        onClose={() => {
+          handleClose();
+          handleResetDays();
+        }}
       >
         <div className="fixed inset-0 bg-white/30" aria-hidden="true" />
         <div className="fixed inset-0 z-10 overflow-y-auto">
@@ -139,7 +184,7 @@ export function Modal({
                           >
                             <Image
                               alt=""
-                              className="rounded-lg"
+                              className="rounded-lg "
                               src={streamer.imageUrl}
                               height={50}
                               width={50}
@@ -167,6 +212,7 @@ export function Modal({
                           <label htmlFor="colorPicker">Pick color</label>
                           <input
                             name="colorPicker"
+                            value={streamer.color ?? "purple"}
                             onChange={(e) =>
                               updateColor(e.target.value, streamer.id)
                             }
@@ -175,19 +221,23 @@ export function Modal({
                             type="color"
                           />
                         </div>
-                        {Object.keys(daysAdded).map((day, key) => (
+                        {daysAdded.map((day, key) => (
                           <TimePicker
                             key={key}
-                            toggleDay={toggleDay}
+                            handleSetDays={handleSetDays}
+                            handleToggle={handleToggle}
                             day={day}
-                            added={!!daysAdded.find((d) => d.day === day)}
+                            days={daysAdded}
                           />
                         ))}
                       </div>
                     </div>
                   </div>
                   <button
-                    onClick={handleClose}
+                    onClick={() => {
+                      handleClose();
+                      handleResetDays();
+                    }}
                     className="top-0 right-0 h-8 w-8 text-white"
                   >
                     <X />
@@ -205,7 +255,10 @@ export function Modal({
                 <button
                   type="button"
                   className="inline-flex w-full justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
-                  onClick={handleCancel}
+                  onClick={() => {
+                    handleClose();
+                    handleResetDays();
+                  }}
                 >
                   never mind
                 </button>

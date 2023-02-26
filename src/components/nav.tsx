@@ -38,14 +38,15 @@ export default function Nav() {
           {sessionData ? (
             <>
               <button
-                className="inline-flex h-full items-center rounded-lg"
+                className="relative inline-flex h-full w-full items-center rounded-lg"
                 type="button"
                 onClick={() => setNavOpen(true)}
               >
                 <Image
-                  className="aspect-square h-full w-10 rounded-full p-2"
+                  className="relative aspect-square h-full w-10 rounded-full p-2"
                   src={sessionData.user?.image as string}
                   alt=""
+                  sizes="150"
                   fill
                 ></Image>
               </button>

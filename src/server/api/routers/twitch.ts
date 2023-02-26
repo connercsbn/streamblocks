@@ -193,40 +193,56 @@ export const twitchRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const toAdd = [
-        "Sunday",
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-      ].map((currentDayOfWeek) => {
-        const currentDayGiven = input.unofficialSchedule.find(
-          (dayToAdd) => dayToAdd.day === currentDayOfWeek
-        );
-        if (currentDayGiven) {
-          const { day, start, end } = currentDayGiven;
-          return {
-            data: {
-              day,
-              start,
-              end,
-            },
-            where: {
-              day,
-            },
-          };
-        }
-        return {
-          data: {
-            start: null,
-            end: null,
-            day: currentDayOfWeek,
+      console.log(input.unofficialSchedule);
+      const filteredUnofficialSchedule = input.unofficialSchedule.filter(
+        (sched) => sched.start && sched.end
+      );
+      const streamerHasUnofficialSchedule = (
+        await ctx.prisma.streamer.findUniqueOrThrow({
+          where: {
+            id: input.streamerId,
           },
-          where: { day: currentDayOfWeek },
-        };
-      });
+          include: {
+            calendar: {
+              include: {
+                unofficialSchedule: true,
+              },
+            },
+          },
+        })
+      ).calendar?.unofficialSchedule;
+
+      if (streamerHasUnofficialSchedule) {
+        const newUnofficialDays = await Promise.all(
+          filteredUnofficialSchedule.map(async (day) => {
+            return ctx.prisma.unofficialDay.create({
+              data: {
+                day: day.day,
+                start: day.start,
+                end: day.end,
+              },
+            });
+          })
+        );
+        return await ctx.prisma.streamer.update({
+          where: {
+            id: input.streamerId,
+          },
+          data: {
+            calendar: {
+              update: {
+                unofficialSchedule: {
+                  update: {
+                    unofficialDays: {
+                      set: newUnofficialDays.map(({ id }) => ({ id })),
+                    },
+                  },
+                },
+              },
+            },
+          },
+        });
+      }
       await ctx.prisma.streamer.update({
         where: {
           id: input.streamerId,
@@ -235,9 +251,15 @@ export const twitchRouter = createTRPCRouter({
           calendar: {
             update: {
               unofficialSchedule: {
-                update: {
+                create: {
                   unofficialDays: {
-                    updateMany: toAdd,
+                    createMany: {
+                      data: filteredUnofficialSchedule.map((day) => ({
+                        day: day.day,
+                        start: day.start,
+                        end: day.end,
+                      })),
+                    },
                   },
                 },
               },
