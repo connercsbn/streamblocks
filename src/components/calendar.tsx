@@ -29,13 +29,12 @@ const streamerColorMap = [
 ];
 
 export default function MyCalendar() {
-  // console.log("liveStatuses", liveStatuses);
   const { height } = useWindowSize();
   const following = api.twitch.getFollowing.useQuery();
 
   const formattedEvents = (following?.data ?? [])
     .filter((streamer) => streamer.isOnCalendar && streamer.isFavorite)
-    .map(({ calendar, id, displayName, isOnCalendar }, number) => {
+    .map(({ calendar, displayName, isOnCalendar }, number) => {
       return (calendar?.segments ?? []).map(
         ({ startTime, endTime, title }) => ({
           start: new Date(startTime),

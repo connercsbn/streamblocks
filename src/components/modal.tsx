@@ -1,5 +1,4 @@
 import { useRef, useState } from "react";
-import { useEffect } from "react";
 import { Dialog } from "@headlessui/react";
 import TimePicker from "../components/timepicker";
 import type { RouterOutputs } from "../utils/api";
@@ -42,7 +41,6 @@ export default function ModalButton({
 export function Modal({
   streamer,
   open,
-  handleOpen,
   handleClose,
 }: {
   streamer: RouterOutputs["twitch"]["getFollowing"][0];

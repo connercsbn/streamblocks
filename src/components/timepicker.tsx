@@ -1,7 +1,6 @@
 import type { PropsWithChildren } from "react";
 import { useState, useEffect } from "react";
 function TimePicker({
-  days,
   day,
   handleSetDays,
   handleToggle,
@@ -28,7 +27,7 @@ function TimePicker({
         <div className="w-40">
           <input
             id={day.day}
-            onChange={(e) => handleToggle(day.day)}
+            onChange={() => handleToggle(day.day)}
             checked={added}
             type="checkbox"
           ></input>
@@ -140,7 +139,7 @@ const Clock = ({
     if (timeSlot === "night") {
       handleSetDays(day.day, null, totalTime);
     }
-  }, [totalTime, day, totalTime]);
+  }, [totalTime, day, timeSlot, handleSetDays]);
 
   return (
     <>
