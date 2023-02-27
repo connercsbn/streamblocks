@@ -497,6 +497,9 @@ export const twitchRouter = createTRPCRouter({
             viewCount: view_count,
             imageUrl: profile_image_url,
             color: color,
+            calendar: {
+              create: {},
+            },
           };
         }
       );
