@@ -291,6 +291,13 @@ export const twitchRouter = createTRPCRouter({
       where: { userId: user.id },
     });
     for (const streamer of streamers) {
+      await ctx.prisma.calendarSegment.deleteMany({
+        where: {
+          calendar: {
+            streamerId: streamer.id,
+          },
+        },
+      });
       const segments =
         (await calendarFetch(streamer.twitchId))?.data?.segments?.map(
           ({ id, start_time, end_time, title }) => {
@@ -302,27 +309,6 @@ export const twitchRouter = createTRPCRouter({
             };
           }
         ) ?? [];
-      const segmentsInDb = (
-        await ctx.prisma.streamer.findUniqueOrThrow({
-          where: {
-            id: streamer.id,
-          },
-          include: {
-            calendar: {
-              include: {
-                segments: true,
-              },
-            },
-          },
-        })
-      ).calendar?.segments;
-      const segmentsNotInDb = segments.filter(
-        (segment) =>
-          !segmentsInDb?.find(
-            (segmentInDb) => segmentInDb.segmentId == segment.segmentId
-          )
-      );
-      console.log({ segmentsNotInDb });
       await ctx.prisma.user.update({
         where: { id: user.id },
         data: {
@@ -336,7 +322,7 @@ export const twitchRouter = createTRPCRouter({
                   update: {
                     segments: {
                       createMany: {
-                        data: segmentsNotInDb ?? [],
+                        data: segments ?? [],
                       },
                     },
                     lastFetched: new Date(),
