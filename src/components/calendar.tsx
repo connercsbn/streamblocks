@@ -33,10 +33,9 @@ const streamerColorMap = [
 export default function MyCalendar() {
   const { height } = useWindowSize();
   const following = api.twitch.getFollowing.useQuery();
-
+  const apiContext = api.useContext();
   const addCalendars = api.twitch.addCalendars.useMutation();
   const follow = api.twitch.follow.useMutation();
-
   if (addCalendars.isIdle && follow.isIdle) {
     follow.mutate(undefined, {
       onSuccess: (count) => {
@@ -51,6 +50,8 @@ export default function MyCalendar() {
           )
         )
           addCalendars.mutate();
+        void apiContext.twitch.getFollowing.invalidate();
+        void apiContext.twitch.getLiveStatus.invalidate();
       },
     });
   }

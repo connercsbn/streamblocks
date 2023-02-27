@@ -1,6 +1,7 @@
 import { z } from "zod";
-
+import { extractColors } from "extract-colors";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
+import getPixels from "get-pixels";
 
 const opts = {
   method: "GET",
@@ -427,10 +428,47 @@ export const twitchRouter = createTRPCRouter({
         .filter((streamer) => !followingDb.includes(streamer))
         .map((streamer) => userFetch(streamer))
     );
+    const notYetUnfollowedInDb = followingDb.filter(
+      (streamer) => !followingTwitch.includes(streamer)
+    );
+    console.log({ notYetUnfollowedInDb });
+    if (notYetUnfollowedInDb) {
+      await ctx.prisma.streamer.deleteMany({
+        where: {
+          AND: {
+            twitchId: {
+              in: notYetUnfollowedInDb,
+            },
+            userId: userId,
+          },
+        },
+      });
+    }
+
     const info = notYetFollowingInDb
       .flatMap((streamer) => streamer.data)
       .map(
-        ({ description, display_name, id, profile_image_url, view_count }) => {
+        async ({
+          description,
+          display_name,
+          id,
+          profile_image_url,
+          view_count,
+        }) => {
+          const color: string | undefined = await new Promise((res, rej) => {
+            getPixels(profile_image_url, (err, pixels) => {
+              if (!err) {
+                const data = [...pixels.data];
+                const width = Math.round(Math.sqrt(data.length / 4));
+                const height = width;
+                extractColors({ data, width, height })
+                  .then((finalColor) =>
+                    res(finalColor.sort((a, b) => b.area - a.area).at(0)?.hex)
+                  )
+                  .catch(rej);
+              }
+            });
+          });
           return {
             userId,
             twitchId: id,
@@ -438,13 +476,15 @@ export const twitchRouter = createTRPCRouter({
             displayName: display_name,
             viewCount: view_count,
             imageUrl: profile_image_url,
+            color: color,
           };
         }
       );
     if (!info.length) return 0;
     return (
       await ctx.prisma.streamer.createMany({
-        data: info,
+        data: await Promise.all(info),
+        skipDuplicates: true,
       })
     ).count;
   }),
