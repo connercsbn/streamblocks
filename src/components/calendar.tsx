@@ -100,7 +100,6 @@ export default function MyCalendar() {
               start.setMinutes(unofficialDay?.start?.getMinutes() ?? 0);
               end.setHours(unofficialDay?.end?.getHours() ?? 0);
               end.setMinutes(unofficialDay?.end?.getMinutes() ?? 0);
-              console.log({ start, end });
               return {
                 start: start,
                 end: end,

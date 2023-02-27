@@ -242,6 +242,26 @@ export const twitchRouter = createTRPCRouter({
           },
         });
       }
+      const streamer = await ctx.prisma.streamer.findUniqueOrThrow({
+        where: {
+          id: input.streamerId,
+        },
+        include: {
+          calendar: true,
+        },
+      });
+      if (!streamer.calendar) {
+        await ctx.prisma.streamer.update({
+          where: {
+            id: streamer.id,
+          },
+          data: {
+            calendar: {
+              create: {},
+            },
+          },
+        });
+      }
       await ctx.prisma.streamer.update({
         where: {
           id: input.streamerId,
