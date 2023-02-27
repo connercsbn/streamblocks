@@ -22,7 +22,9 @@ export default function Streamer({
   const [isHovering, setIsHovering] = useState(false);
   const fullClasses = "px-4";
   const miniClasses = "w-full justify-center";
-  const hasCalendar = !!streamer.calendar?.segments.length;
+  const hasCalendar =
+    !!streamer.calendar?.segments.length ||
+    !!streamer.calendar?.unofficialSchedule?.unofficialDays.length;
   return (
     <div
       onMouseOver={() => setIsHovering(true)}
@@ -56,7 +58,11 @@ export default function Streamer({
                     <PlusButton />
                   </MyButton>
                 ) : (
-                  <Modal streamer={streamer} hovering={isHovering} />
+                  <Modal
+                    streamer={streamer}
+                    hovering={isHovering}
+                    handleToggleFavorite={handleToggleFavorite}
+                  />
                 )}
               </span>
             </>

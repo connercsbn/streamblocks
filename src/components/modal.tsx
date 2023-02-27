@@ -10,9 +10,11 @@ import { api } from "../utils/api";
 export default function ModalButton({
   streamer,
   hovering,
+  handleToggleFavorite,
 }: {
   streamer: RouterOutputs["twitch"]["getFollowing"][0];
   hovering: boolean;
+  handleToggleFavorite: (streamerId: number) => void;
 }) {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
@@ -24,7 +26,9 @@ export default function ModalButton({
       <MyButton
         hovering={hovering}
         color="yellow"
-        onClick={() => setOpen(!open)}
+        onClick={() => {
+          handleOpen();
+        }}
       >
         <PlusButton />
       </MyButton>
@@ -33,6 +37,7 @@ export default function ModalButton({
         open={open}
         handleOpen={handleOpen}
         handleClose={handleClose}
+        handleToggleFavorite={handleToggleFavorite}
       />
     </>
   );
@@ -42,11 +47,13 @@ export function Modal({
   streamer,
   open,
   handleClose,
+  handleToggleFavorite,
 }: {
   streamer: RouterOutputs["twitch"]["getFollowing"][0];
   open: boolean;
   handleOpen: () => void;
   handleClose: () => void;
+  handleToggleFavorite: (streamerId: number) => void;
 }) {
   const cancelButtonRef = useRef(null);
 
@@ -131,10 +138,18 @@ export function Modal({
   });
 
   const updateUnofficialSchedule = () => {
-    unofficialScheduleMutation.mutate({
-      streamerId: streamer.id,
-      unofficialSchedule: daysAdded.filter((day) => day.enabled),
-    });
+    unofficialScheduleMutation.mutate(
+      {
+        streamerId: streamer.id,
+        unofficialSchedule: daysAdded.filter((day) => day.enabled),
+      },
+      {
+        onSettled: () => {
+          handleClose();
+          handleToggleFavorite(streamer.id);
+        },
+      }
+    );
   };
   const updateColor = (color: string, streamerId: number) => {
     colorMutation.mutate({
@@ -145,6 +160,8 @@ export function Modal({
 
   const handleSave = () => {
     updateUnofficialSchedule();
+    // handleClose();
+    // handleToggleFavorite(streamer.id);
   };
 
   if (!streamer) return <></>;
@@ -248,7 +265,11 @@ export function Modal({
                   className="inline-flex w-full justify-center rounded-md border border-transparent bg-green-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
                   onClick={handleSave}
                 >
-                  save
+                  {unofficialScheduleMutation.isLoading ? (
+                    <p>saving...</p>
+                  ) : (
+                    <p>save</p>
+                  )}
                 </button>
                 <button
                   type="button"

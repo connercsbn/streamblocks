@@ -34,7 +34,11 @@ export const Following: React.FC<{
       )}
       <div className={`my-2 ${big ? "" : "w-full"}`}>
         {regulars
-          ?.filter((streamer) => Number(streamer.calendar?.segments.length) > 0)
+          ?.filter(
+            (streamer) =>
+              !!streamer.calendar?.segments.length ||
+              !!streamer.calendar?.unofficialSchedule?.unofficialDays.length
+          )
           .map((streamer, key) => (
             <StreamerInList
               streamer={streamer}
@@ -46,12 +50,14 @@ export const Following: React.FC<{
         <div className="my-3 border-[1px] border-dashed border-yellow-300/20"></div>
         {regulars
           ?.filter(
-            (streamer) => Number(streamer.calendar?.segments.length) === 0
+            (streamer) =>
+              !streamer.calendar?.segments.length &&
+              !streamer.calendar?.unofficialSchedule?.unofficialDays.length
           )
           .map((streamer, key) => (
             <StreamerInList
               streamer={streamer}
-              key={key}
+              key={streamer.id}
               size={big ? "full" : "mini"}
               handleToggleFavorite={handleToggleStreamer}
             />

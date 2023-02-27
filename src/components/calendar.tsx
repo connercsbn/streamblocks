@@ -36,7 +36,7 @@ export default function MyCalendar() {
 
   const updateCalendars = api.twitch.addCalendars.useMutation();
   if (
-    following.data?.some(
+    following?.data?.some(
       (streamer) =>
         new Date().getTime() - (streamer.calendar?.lastFetched.getTime() ?? 0) <
         // one day in millis
@@ -48,11 +48,7 @@ export default function MyCalendar() {
   const today = new Date();
 
   const formattedEvents = (following?.data ?? [])
-    .filter(
-      (streamer) =>
-        (streamer.isOnCalendar && streamer.isFavorite) ||
-        streamer.calendar?.unofficialSchedule?.unofficialDays.length
-    )
+    .filter((streamer) => streamer.isOnCalendar && streamer.isFavorite)
     .map(({ calendar, displayName, isOnCalendar }, number) => {
       if (calendar?.segments.length) {
         const firstThing = (calendar?.segments ?? []).map(

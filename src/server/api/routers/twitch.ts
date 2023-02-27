@@ -416,7 +416,7 @@ export const twitchRouter = createTRPCRouter({
       });
       await ctx.prisma.streamer.update({
         where: { id: streamerToToggle.id },
-        data: { isFavorite: !streamerToToggle.isFavorite },
+        data: { isFavorite: !streamerToToggle.isFavorite, isOnCalendar: true },
       });
     }),
   follow: protectedProcedure.mutation(async ({ ctx }) => {
