@@ -34,18 +34,27 @@ export default function MyCalendar() {
   const { height } = useWindowSize();
   const following = api.twitch.getFollowing.useQuery();
 
-  const updateCalendars = api.twitch.addCalendars.useMutation();
-  if (
-    updateCalendars.isIdle &&
-    following?.data?.some(
-      (streamer) =>
-        new Date().getTime() - (streamer.calendar?.lastFetched.getTime() ?? 0) >
-        // one day in millis
-        86_400_000
-    )
-  ) {
-    updateCalendars.mutate();
+  const addCalendars = api.twitch.addCalendars.useMutation();
+  const follow = api.twitch.follow.useMutation();
+
+  if (addCalendars.isIdle) {
+    follow.mutate(undefined, {
+      onSuccess: (count) => {
+        if (
+          count ||
+          following?.data?.some(
+            (streamer) =>
+              new Date().getTime() -
+                (streamer.calendar?.lastFetched.getTime() ?? 0) >
+              // one day in millis
+              86_400_000
+          )
+        )
+          addCalendars.mutate();
+      },
+    });
   }
+
   const today = new Date();
 
   const formattedEvents = (following?.data ?? [])

@@ -432,6 +432,7 @@ export const twitchRouter = createTRPCRouter({
       .map(
         ({ description, display_name, id, profile_image_url, view_count }) => {
           return {
+            userId,
             twitchId: id,
             description,
             displayName: display_name,
@@ -440,17 +441,10 @@ export const twitchRouter = createTRPCRouter({
           };
         }
       );
-    await ctx.prisma.user.update({
-      where: {
-        id: userId,
-      },
-      data: {
-        streamers: {
-          createMany: {
-            data: info,
-          },
-        },
-      },
-    });
+    return (
+      await ctx.prisma.streamer.createMany({
+        data: info,
+      })
+    ).count;
   }),
 });
