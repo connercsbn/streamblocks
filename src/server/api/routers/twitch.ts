@@ -250,18 +250,6 @@ export const twitchRouter = createTRPCRouter({
           calendar: true,
         },
       });
-      if (!streamer.calendar) {
-        await ctx.prisma.streamer.update({
-          where: {
-            id: streamer.id,
-          },
-          data: {
-            calendar: {
-              create: {},
-            },
-          },
-        });
-      }
       await ctx.prisma.streamer.update({
         where: {
           id: input.streamerId,
@@ -504,11 +492,10 @@ export const twitchRouter = createTRPCRouter({
         }
       );
     if (!info.length) return 0;
-    return (
-      await ctx.prisma.streamer.createMany({
-        data: await Promise.all(info),
-        skipDuplicates: true,
-      })
-    ).count;
+    for (const streamer of info) {
+      await ctx.prisma.streamer.create({
+        data: { ...(await streamer), calendar: {} },
+      });
+    }
   }),
 });

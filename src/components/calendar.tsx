@@ -60,7 +60,7 @@ export default function MyCalendar() {
 
   const formattedEvents = (following?.data ?? [])
     .filter((streamer) => streamer.isOnCalendar && streamer.isFavorite)
-    .map(({ calendar, displayName, isOnCalendar }, number) => {
+    .map(({ calendar, displayName, isOnCalendar, color }, number) => {
       if (calendar?.segments.length) {
         const firstThing = (calendar?.segments ?? []).map(
           ({ startTime, endTime, title }) => ({
@@ -107,6 +107,7 @@ export default function MyCalendar() {
                 streamerOrder: number,
                 streamer: displayName,
                 isOnCalendar: true,
+                color,
               };
             });
         }
@@ -118,6 +119,7 @@ export default function MyCalendar() {
     streamer: string;
     streamerOrder: number;
     isOnCalendar: boolean;
+    color: string;
   })[];
 
   return (
@@ -136,6 +138,13 @@ export default function MyCalendar() {
               className: `${
                 streamerColorMap.at(event.streamerOrder) ?? ""
               } border-2 rounded-md border-solid text-black shadow-lg`,
+              style: event?.color
+                ? {
+                    backgroundColor: event.color,
+                    borderColor: "black",
+                    color: "white",
+                  }
+                : {},
             };
           }}
           className=""
