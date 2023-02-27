@@ -441,6 +441,7 @@ export const twitchRouter = createTRPCRouter({
           };
         }
       );
+    if (!info.length) return 0;
     return (
       await ctx.prisma.streamer.createMany({
         data: info,

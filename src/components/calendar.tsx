@@ -37,7 +37,7 @@ export default function MyCalendar() {
   const addCalendars = api.twitch.addCalendars.useMutation();
   const follow = api.twitch.follow.useMutation();
 
-  if (addCalendars.isIdle) {
+  if (addCalendars.isIdle && follow.isIdle) {
     follow.mutate(undefined, {
       onSuccess: (count) => {
         if (
