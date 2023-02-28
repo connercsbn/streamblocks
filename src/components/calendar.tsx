@@ -41,23 +41,23 @@ export default function MyCalendar() {
       void apiContext.twitch.getLiveStatus.invalidate();
     },
   });
-  // if (addCalendars.isIdle && follow.isIdle) {
-  //   follow.mutate(undefined, {
-  //     onSuccess: (count) => {
-  //       if (
-  //         count ||
-  //         following?.data?.some(
-  //           (streamer) =>
-  //             new Date().getTime() -
-  //               (streamer.calendar?.lastFetched.getTime() ?? 0) >
-  //             // one day in millis
-  //             86_400_000
-  //         )
-  //       )
-  //         addCalendars.mutate();
-  //     },
-  //   });
-  // }
+  if (addCalendars.isIdle && follow.isIdle) {
+    follow.mutate(undefined, {
+      onSuccess: (count) => {
+        if (
+          count ||
+          following?.data?.some(
+            (streamer) =>
+              new Date().getTime() -
+                (streamer.calendar?.lastFetched.getTime() ?? 0) >
+              // one day in millis
+              86_400_000
+          )
+        )
+          addCalendars.mutate();
+      },
+    });
+  }
 
   const today = new Date();
 

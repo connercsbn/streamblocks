@@ -17,10 +17,6 @@ const Home: NextPage = () => {
   const initiate = api.twitch.initiate.useMutation({
     onSuccess: async () => {
       await apiContext.twitch.getInitiated.invalidate();
-      // await apiContext.twitch.getInitiated.cancel();
-      // const previousInitiatedState = apiContext.twitch.getFollowing.getData();
-      // apiContext.twitch.getInitiated.setData(undefined, () => "INITIATED");
-      // return { previousInitiatedState };
     },
     onMutate: async () => {
       await apiContext.twitch.getInitiated.cancel();
