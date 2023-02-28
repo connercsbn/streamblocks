@@ -45,12 +45,19 @@ model Session {
   @@index([userId])
 }
 
+enum InitiationState {
+  UNINITIATED
+  INITIATING
+  INITIATED
+}
+
 model User {
-  id            String     @id @default(cuid())
+  id            String          @id @default(cuid())
   name          String?
-  email         String?    @unique
+  email         String?         @unique
   emailVerified DateTime?
   image         String?
+  initiationState InitiationState @default(UNINITIATED)
   accounts      Account[]
   sessions      Session[]
   streamers     Streamer[]

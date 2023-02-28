@@ -1,7 +1,9 @@
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { extractColors } from "extract-colors";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import getPixels from "get-pixels";
+import { InitiationState } from "@prisma/client";
 
 const opts = {
   method: "GET",
@@ -363,6 +365,51 @@ export const twitchRouter = createTRPCRouter({
         },
       })
     )?.streamers.filter((streamer) => streamer.isFavorite);
+  }),
+  getInitiated: protectedProcedure.query(async ({ ctx }) => {
+    const user = await ctx.prisma.user.findUniqueOrThrow({
+      where: {
+        id: ctx.session.user.id,
+      },
+    });
+    console.log(user);
+    return user.initiationState;
+  }),
+  initiate: protectedProcedure.mutation(async ({ ctx }) => {
+    const user = await ctx.prisma.user.findUniqueOrThrow({
+      where: {
+        id: ctx.session.user.id,
+      },
+    });
+    if (user.initiationState !== "UNINITIATED") {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "User has already begun initiation",
+      });
+    }
+    console.log("INITITATING");
+    await ctx.prisma.user.update({
+      where: {
+        id: ctx.session.user.id,
+      },
+      data: {
+        initiationState: InitiationState.INITIATING,
+      },
+    });
+    await new Promise((res) => {
+      setTimeout(() => {
+        res(0);
+      }, 6000);
+    });
+    await ctx.prisma.user.update({
+      where: {
+        id: ctx.session.user.id,
+      },
+      data: {
+        initiationState: InitiationState.INITIATED,
+      },
+    });
+    console.log("done");
   }),
   getFollowing: protectedProcedure.query(async ({ ctx }) => {
     return (

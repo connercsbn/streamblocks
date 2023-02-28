@@ -1,24 +1,86 @@
 import { useSession } from "next-auth/react";
 import Nav from "../components/nav";
+import { useEffect, useState } from "react";
 import MyCalendar from "../components/calendar";
 import Image from "next/image";
 import { type NextPage } from "next";
 import Sidebar from "../components/sidebar";
 import { signIn } from "next-auth/react";
 import mrbeast from "../mrbeast.png";
+import { api } from "../utils/api";
+import { Transition } from "@headlessui/react";
+import { setTimeout } from "timers";
 
 const Home: NextPage = () => {
+  const apiContext = api.useContext();
   const { data: sessionData, status: sessionStatus } = useSession();
-  if (sessionData?.user) {
+  const initiate = api.twitch.initiate.useMutation({
+    onSuccess: async () => {
+      await apiContext.twitch.getInitiated.invalidate();
+      // await apiContext.twitch.getInitiated.cancel();
+      // const previousInitiatedState = apiContext.twitch.getFollowing.getData();
+      // apiContext.twitch.getInitiated.setData(undefined, () => "INITIATED");
+      // return { previousInitiatedState };
+    },
+    onMutate: async () => {
+      await apiContext.twitch.getInitiated.cancel();
+      const previousInitiatedState = apiContext.twitch.getFollowing.getData();
+      apiContext.twitch.getInitiated.setData(undefined, () => "INITIATING");
+      return { previousInitiatedState };
+    },
+  });
+  const initiated = api.twitch.getInitiated.useQuery();
+
+  const [helpShowing, setHelpShowing] = useState(false);
+
+  useEffect(() => {
+    if (initiated.data === "UNINITIATED") {
+      initiate.mutate();
+      setHelpShowing(true);
+    }
+    if (initiated.data === "INITIATED") {
+      setTimeout(() => {
+        setHelpShowing(false);
+      }, 3000);
+    }
+  }, [initiated, initiate]);
+
+  if (sessionData?.user && initiated.data) {
     return (
       <>
-        <Nav />
-        <div className="flex w-full">
-          <Sidebar />
-          <div className="w-full">
-            <MyCalendar />
+        {initiated.data === "INITIATED" && (
+          <>
+            <Nav />
+            <div className="flex w-full">
+              <Sidebar />
+              <div className="w-full">
+                <MyCalendar />
+              </div>
+            </div>
+          </>
+        )}
+
+        <Transition
+          show={initiated.data !== "INITIATED" || helpShowing}
+          enter="transition-opacity duration-1000"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          beforeEnter={() => {
+            console.log("before enter");
+          }}
+          beforeLeave={() => {
+            console.log("before leave");
+          }}
+          leave="transition-opacity duration-1000"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <div className="absolute inset-0 z-50 h-full w-full bg-gradient-to-b from-[#2e026d] to-[#15162c]">
+            <div className="flex h-full w-full flex-col items-center justify-center">
+              <SettingThingsUpForYou />
+            </div>
           </div>
-        </div>
+        </Transition>
       </>
     );
   }
@@ -41,176 +103,7 @@ const Home: NextPage = () => {
               <span>
                 Sign in with <span className="font-bold">Twitch</span>
               </span>
-              <svg
-                overflow="visible"
-                width="50px"
-                height="50px"
-                version="1.1"
-                viewBox="0 0 40 40"
-                x="0px"
-                y="0px"
-                className="ScSvg-sc-mx5axi-2 UMhCH"
-              >
-                <g>
-                  <polygon
-                    points="13 8 8 13 8 31 14 31 14 36 19 31 23 31 32 22 32 8"
-                    className="fill-purple-500"
-                  >
-                    <animate
-                      dur="150ms"
-                      begin="indefinite"
-                      fill="freeze"
-                      calcMode="spline"
-                      keyTimes="0; 1"
-                      keySplines="0.25 0.1 0.25 1"
-                      attributeName="points"
-                      from="13 8 8 13 8 31 14 31 14 36 19 31 23 31 32 22 32 8"
-                      to="16 5 8 13 8 31 14 31 14 36 19 31 23 31 35 19 35 5"
-                    ></animate>
-                    <animate
-                      dur="250ms"
-                      begin="indefinite"
-                      fill="freeze"
-                      calcMode="spline"
-                      keyTimes="0; 1"
-                      keySplines="0.25 0.1 0.25 1"
-                      attributeName="points"
-                      from="16 5 8 13 8 31 14 31 14 36 19 31 23 31 35 19 35 5"
-                      to="13 8 8 13 8 31 14 31 14 36 19 31 23 31 32 22 32 8"
-                    ></animate>
-                    <animate
-                      dur="50ms"
-                      begin="indefinite"
-                      fill="freeze"
-                      calcMode="spline"
-                      keyTimes="0; 1"
-                      keySplines="0.25 0.1 0.25 1"
-                      attributeName="points"
-                      to="13 8 8 13 8 31 14 31 14 36 19 31 23 31 32 22 32 8"
-                      from="16 5 8 13 8 31 14 31 14 36 19 31 23 31 35 19 35 5"
-                    ></animate>
-                    <animate
-                      dur="75ms"
-                      begin="indefinite"
-                      fill="freeze"
-                      calcMode="spline"
-                      keyTimes="0; 1"
-                      keySplines="0.25 0.1 0.25 1"
-                      attributeName="points"
-                      to="16 5 8 13 8 31 14 31 14 36 19 31 23 31 35 19 35 5"
-                      from="13 8 8 13 8 31 14 31 14 36 19 31 23 31 32 22 32 8"
-                    ></animate>
-                  </polygon>
-                  <polygon
-                    points="26 25 30 21 30 10 14 10 14 25 18 25 18 29 22 25"
-                    className="fill-white"
-                  >
-                    <animateTransform
-                      dur="150ms"
-                      begin="indefinite"
-                      fill="freeze"
-                      calcMode="spline"
-                      keyTimes="0; 1"
-                      keySplines="0.25 0.1 0.25 1"
-                      attributeName="transform"
-                      type="translate"
-                      from="0 0"
-                      to="3 -3"
-                    ></animateTransform>
-                    <animateTransform
-                      dur="250ms"
-                      begin="indefinite"
-                      fill="freeze"
-                      calcMode="spline"
-                      keyTimes="0; 1"
-                      keySplines="0.25 0.1 0.25 1"
-                      attributeName="transform"
-                      type="translate"
-                      from="3 -3"
-                      to="0 0"
-                    ></animateTransform>
-                    <animateTransform
-                      dur="50ms"
-                      begin="indefinite"
-                      fill="freeze"
-                      calcMode="spline"
-                      keyTimes="0; 1"
-                      keySplines="0.25 0.1 0.25 1"
-                      attributeName="transform"
-                      type="translate"
-                      from="3 -3"
-                      to="0 0"
-                    ></animateTransform>
-                    <animateTransform
-                      dur="75ms"
-                      begin="indefinite"
-                      fill="freeze"
-                      calcMode="spline"
-                      keyTimes="0; 1"
-                      keySplines="0.25 0.1 0.25 1"
-                      attributeName="transform"
-                      type="translate"
-                      from="0 0"
-                      to="3 -3"
-                    ></animateTransform>
-                  </polygon>
-                  <g className="fill-purple-500">
-                    <path
-                      d="M20,14 L22,14 L22,20 L20,20 L20,14 Z M27,14 L27,20 L25,20 L25,14 L27,14 Z"
-                      className="ScBody-sc-mx5axi-3 gktgjG"
-                    >
-                      <animateTransform
-                        dur="150ms"
-                        begin="indefinite"
-                        fill="freeze"
-                        calcMode="spline"
-                        keyTimes="0; 1"
-                        keySplines="0.25 0.1 0.25 1"
-                        attributeName="transform"
-                        type="translate"
-                        from="0 0"
-                        to="3 -3"
-                      ></animateTransform>
-                      <animateTransform
-                        dur="250ms"
-                        begin="indefinite"
-                        fill="freeze"
-                        calcMode="spline"
-                        keyTimes="0; 1"
-                        keySplines="0.25 0.1 0.25 1"
-                        attributeName="transform"
-                        type="translate"
-                        from="3 -3"
-                        to="0 0"
-                      ></animateTransform>
-                      <animateTransform
-                        dur="50ms"
-                        begin="indefinite"
-                        fill="freeze"
-                        calcMode="spline"
-                        keyTimes="0; 1"
-                        keySplines="0.25 0.1 0.25 1"
-                        attributeName="transform"
-                        type="translate"
-                        from="3 -3"
-                        to="0 0"
-                      ></animateTransform>
-                      <animateTransform
-                        dur="75ms"
-                        begin="indefinite"
-                        fill="freeze"
-                        calcMode="spline"
-                        keyTimes="0; 1"
-                        keySplines="0.25 0.1 0.25 1"
-                        attributeName="transform"
-                        type="translate"
-                        from="0 0"
-                        to="3 -3"
-                      ></animateTransform>
-                    </path>
-                  </g>
-                </g>
-              </svg>
+              <TwitchIcon />
             </button>
           </div>
         </div>
@@ -219,5 +112,198 @@ const Home: NextPage = () => {
   }
   return <></>;
 };
+const SettingThingsUpForYou = () => {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    setShow(true);
+  }, []);
+  return (
+    <Transition
+      show={show}
+      enter="transition-opacity duration-1000"
+      enterFrom="opacity-0"
+      enterTo="opacity-100"
+      leave="transition-opacity duration-150"
+      leaveFrom="opacity-100"
+      leaveTo="opacity-0"
+    >
+      <div className="text-2xl text-white">
+        Setting some things up for you...
+      </div>
+    </Transition>
+  );
+};
+const TwitchIcon = () => (
+  <svg
+    overflow="visible"
+    width="50px"
+    height="50px"
+    version="1.1"
+    viewBox="0 0 40 40"
+    x="0px"
+    y="0px"
+    className="ScSvg-sc-mx5axi-2 UMhCH"
+  >
+    <g>
+      <polygon
+        points="13 8 8 13 8 31 14 31 14 36 19 31 23 31 32 22 32 8"
+        className="fill-purple-500"
+      >
+        <animate
+          dur="150ms"
+          begin="indefinite"
+          fill="freeze"
+          calcMode="spline"
+          keyTimes="0; 1"
+          keySplines="0.25 0.1 0.25 1"
+          attributeName="points"
+          from="13 8 8 13 8 31 14 31 14 36 19 31 23 31 32 22 32 8"
+          to="16 5 8 13 8 31 14 31 14 36 19 31 23 31 35 19 35 5"
+        ></animate>
+        <animate
+          dur="250ms"
+          begin="indefinite"
+          fill="freeze"
+          calcMode="spline"
+          keyTimes="0; 1"
+          keySplines="0.25 0.1 0.25 1"
+          attributeName="points"
+          from="16 5 8 13 8 31 14 31 14 36 19 31 23 31 35 19 35 5"
+          to="13 8 8 13 8 31 14 31 14 36 19 31 23 31 32 22 32 8"
+        ></animate>
+        <animate
+          dur="50ms"
+          begin="indefinite"
+          fill="freeze"
+          calcMode="spline"
+          keyTimes="0; 1"
+          keySplines="0.25 0.1 0.25 1"
+          attributeName="points"
+          to="13 8 8 13 8 31 14 31 14 36 19 31 23 31 32 22 32 8"
+          from="16 5 8 13 8 31 14 31 14 36 19 31 23 31 35 19 35 5"
+        ></animate>
+        <animate
+          dur="75ms"
+          begin="indefinite"
+          fill="freeze"
+          calcMode="spline"
+          keyTimes="0; 1"
+          keySplines="0.25 0.1 0.25 1"
+          attributeName="points"
+          to="16 5 8 13 8 31 14 31 14 36 19 31 23 31 35 19 35 5"
+          from="13 8 8 13 8 31 14 31 14 36 19 31 23 31 32 22 32 8"
+        ></animate>
+      </polygon>
+      <polygon
+        points="26 25 30 21 30 10 14 10 14 25 18 25 18 29 22 25"
+        className="fill-white"
+      >
+        <animateTransform
+          dur="150ms"
+          begin="indefinite"
+          fill="freeze"
+          calcMode="spline"
+          keyTimes="0; 1"
+          keySplines="0.25 0.1 0.25 1"
+          attributeName="transform"
+          type="translate"
+          from="0 0"
+          to="3 -3"
+        ></animateTransform>
+        <animateTransform
+          dur="250ms"
+          begin="indefinite"
+          fill="freeze"
+          calcMode="spline"
+          keyTimes="0; 1"
+          keySplines="0.25 0.1 0.25 1"
+          attributeName="transform"
+          type="translate"
+          from="3 -3"
+          to="0 0"
+        ></animateTransform>
+        <animateTransform
+          dur="50ms"
+          begin="indefinite"
+          fill="freeze"
+          calcMode="spline"
+          keyTimes="0; 1"
+          keySplines="0.25 0.1 0.25 1"
+          attributeName="transform"
+          type="translate"
+          from="3 -3"
+          to="0 0"
+        ></animateTransform>
+        <animateTransform
+          dur="75ms"
+          begin="indefinite"
+          fill="freeze"
+          calcMode="spline"
+          keyTimes="0; 1"
+          keySplines="0.25 0.1 0.25 1"
+          attributeName="transform"
+          type="translate"
+          from="0 0"
+          to="3 -3"
+        ></animateTransform>
+      </polygon>
+      <g className="fill-purple-500">
+        <path
+          d="M20,14 L22,14 L22,20 L20,20 L20,14 Z M27,14 L27,20 L25,20 L25,14 L27,14 Z"
+          className="ScBody-sc-mx5axi-3 gktgjG"
+        >
+          <animateTransform
+            dur="150ms"
+            begin="indefinite"
+            fill="freeze"
+            calcMode="spline"
+            keyTimes="0; 1"
+            keySplines="0.25 0.1 0.25 1"
+            attributeName="transform"
+            type="translate"
+            from="0 0"
+            to="3 -3"
+          ></animateTransform>
+          <animateTransform
+            dur="250ms"
+            begin="indefinite"
+            fill="freeze"
+            calcMode="spline"
+            keyTimes="0; 1"
+            keySplines="0.25 0.1 0.25 1"
+            attributeName="transform"
+            type="translate"
+            from="3 -3"
+            to="0 0"
+          ></animateTransform>
+          <animateTransform
+            dur="50ms"
+            begin="indefinite"
+            fill="freeze"
+            calcMode="spline"
+            keyTimes="0; 1"
+            keySplines="0.25 0.1 0.25 1"
+            attributeName="transform"
+            type="translate"
+            from="3 -3"
+            to="0 0"
+          ></animateTransform>
+          <animateTransform
+            dur="75ms"
+            begin="indefinite"
+            fill="freeze"
+            calcMode="spline"
+            keyTimes="0; 1"
+            keySplines="0.25 0.1 0.25 1"
+            attributeName="transform"
+            type="translate"
+            from="0 0"
+            to="3 -3"
+          ></animateTransform>
+        </path>
+      </g>
+    </g>
+  </svg>
+);
 
 export default Home;
