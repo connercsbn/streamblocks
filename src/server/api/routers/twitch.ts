@@ -541,7 +541,7 @@ export const twitchRouter = createTRPCRouter({
     if (!info.length) return 0;
     for (const streamer of info) {
       await ctx.prisma.streamer.create({
-        data: { ...(await streamer), calendar: {} },
+        data: await streamer,
       });
     }
   }),
