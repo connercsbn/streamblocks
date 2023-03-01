@@ -1,5 +1,6 @@
 import { type PropsWithChildren } from "react";
 import Image from "next/image";
+import { MoreButton } from "./buttons";
 import type { Streamer } from "@prisma/client";
 import { useState } from "react";
 import { MyButton, MinusButton } from "./buttons";
@@ -48,27 +49,30 @@ export default function Streamer({
           {!top && size === "full" && (
             <>
               {" "}
-              <span className="relative top-0.5 ml-2 hidden group-hover:inline">
-                {hasCalendar ? (
-                  <MyButton
-                    color="green"
-                    onClick={() => handleToggleFavorite(streamer.id)}
-                    hovering={isHovering}
-                  >
-                    <PlusButton />
-                  </MyButton>
-                ) : (
-                  <Modal
-                    streamer={streamer}
-                    hovering={isHovering}
-                    handleToggleFavorite={handleToggleFavorite}
-                  />
-                )}
+              <span className="ml-2 hidden group-hover:flex group-hover:items-center">
+                <>
+                  {hasCalendar ? (
+                    <MyButton
+                      color="green"
+                      onClick={() => handleToggleFavorite(streamer.id)}
+                      hovering={isHovering}
+                    >
+                      <PlusButton />
+                    </MyButton>
+                  ) : (
+                    <Modal
+                      streamer={streamer}
+                      hovering={isHovering}
+                      handleToggleFavorite={handleToggleFavorite}
+                    />
+                  )}
+                  <MoreButton hovering={isHovering} />
+                </>
               </span>
             </>
           )}
           {top && size === "full" && (
-            <span className="relative top-0.5 ml-2 hidden group-hover:inline">
+            <span className="relative ml-2 hidden group-hover:inline">
               <MyButton
                 color="red"
                 onClick={() => handleToggleFavorite(streamer.id)}
@@ -83,7 +87,7 @@ export default function Streamer({
               checked={streamer.isOnCalendar}
               type="checkbox"
               onChange={() => handleToggleCalendar(streamer.id)}
-              className="h-7"
+              className="ml-2 h-7"
             />
           )}
         </div>

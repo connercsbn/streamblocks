@@ -3,7 +3,8 @@ import { z } from "zod";
 import { extractColors } from "extract-colors";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import getPixels from "get-pixels";
-import { InitiationState } from "@prisma/client";
+import { InitiationState, Streamer } from "@prisma/client";
+import { setTimeout } from "timers";
 
 const opts = {
   method: "GET",
@@ -290,23 +291,29 @@ export const twitchRouter = createTRPCRouter({
           id: streamerId,
         },
         data: {
-          color: color,
+          color,
         },
       });
     }),
   addCalendars: protectedProcedure.mutation(async ({ ctx }) => {
-    const user = await ctx.prisma.user.findUniqueOrThrow({
-      where: { id: ctx.session.user.id },
-    });
+    const userId = ctx.session.user.id;
     const streamers = await ctx.prisma.streamer.findMany({
-      where: { userId: user.id },
+      where: { userId },
+      include: {
+        calendar: true,
+      },
     });
+    let tmpCount = 0;
     for (const streamer of streamers) {
-      await ctx.prisma.calendarSegment.deleteMany({
+      if (
+        new Date().getTime() - (streamer.calendar?.lastFetched.getTime() ?? 0) <
+        86_400_000
+      ) {
+        continue;
+      }
+      await ctx.prisma.calendar.deleteMany({
         where: {
-          calendar: {
-            streamerId: streamer.id,
-          },
+          streamerId: streamer.id,
         },
       });
       const segments =
@@ -320,8 +327,13 @@ export const twitchRouter = createTRPCRouter({
             };
           }
         ) ?? [];
+      console.log({ newSegments: segments });
+      tmpCount++;
+      console.log(
+        `adding ${streamer.displayName} (${tmpCount}/${streamers.length})`
+      );
       await ctx.prisma.user.update({
-        where: { id: user.id },
+        where: { id: userId },
         data: {
           streamers: {
             update: {
@@ -330,7 +342,7 @@ export const twitchRouter = createTRPCRouter({
               },
               data: {
                 calendar: {
-                  update: {
+                  create: {
                     segments: {
                       createMany: {
                         data: segments ?? [],
@@ -500,7 +512,7 @@ export const twitchRouter = createTRPCRouter({
       });
     }
 
-    const info = notYetFollowingInDb
+    const followsToAddPromise = notYetFollowingInDb
       .flatMap((streamer) => streamer.data)
       .map(
         async ({
@@ -510,20 +522,33 @@ export const twitchRouter = createTRPCRouter({
           profile_image_url,
           view_count,
         }) => {
-          const color: string | undefined = await new Promise((res, rej) => {
-            getPixels(profile_image_url, (err, pixels) => {
-              if (!err) {
-                const data = [...pixels.data];
-                const width = Math.round(Math.sqrt(data.length / 4));
-                const height = width;
-                extractColors({ data, width, height })
-                  .then((finalColor) =>
-                    res(finalColor.sort((a, b) => b.area - a.area).at(0)?.hex)
-                  )
-                  .catch(rej);
-              }
-            });
-          });
+          const color: string =
+            (await new Promise((res, rej) => {
+              getPixels(profile_image_url, (err, pixels) => {
+                if (!pixels?.data) {
+                  rej("no pixel data");
+                }
+                if (err) {
+                  rej(err);
+                }
+                try {
+                  const data = [...pixels.data];
+                  const width = Math.round(Math.sqrt(data.length / 4));
+                  const height = width;
+                  extractColors({ data, width, height })
+                    .then((finalColor) => {
+                      const color = finalColor
+                        .sort((a, b) => b.area - a.area)
+                        .at(0)?.hex;
+
+                      res(color || "purple");
+                    })
+                    .catch(rej);
+                } catch (e) {
+                  rej(e);
+                }
+              });
+            })) || "purple";
           return {
             userId,
             twitchId: id,
@@ -531,18 +556,21 @@ export const twitchRouter = createTRPCRouter({
             displayName: display_name,
             viewCount: view_count,
             imageUrl: profile_image_url,
-            color: color,
-            calendar: {
-              create: {},
-            },
+            color,
           };
         }
       );
-    if (!info.length) return 0;
-    for (const streamer of info) {
-      await ctx.prisma.streamer.create({
-        data: await streamer,
-      });
-    }
+    const followsToAdd = (
+      (await Promise.allSettled(followsToAddPromise)).filter(
+        (res) => res.status === "fulfilled"
+      ) as PromiseFulfilledResult<Streamer>[]
+    ).map((val) => val.value);
+    const count = (
+      await ctx.prisma.streamer.createMany({
+        data: followsToAdd,
+      })
+    ).count;
+    console.log("DONE");
+    return count;
   }),
 });

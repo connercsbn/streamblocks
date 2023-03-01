@@ -89,10 +89,6 @@ export function Modal({
   };
   const [daysAdded, setDaysAdded] = useState(getInitialDays());
 
-  // useEffect(() => {
-  //   console.log(daysAdded);
-  // }, [daysAdded]);
-
   const handleToggle = (day: string) => {
     const newDays = daysAdded.slice();
     const dayToChange = newDays.find((x) => x.day === day);

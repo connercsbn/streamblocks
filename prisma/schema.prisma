@@ -94,7 +94,7 @@ model UnofficialDay {
   day                  String
   start                DateTime?
   end                  DateTime?
-  unofficialSchedule   UnofficialSchedule? @relation(fields: [unofficialScheduleId], references: [id])
+  unofficialSchedule   UnofficialSchedule? @relation(fields: [unofficialScheduleId], references: [id], onDelete: Cascade)
   unofficialScheduleId Int?
 
   @@index([unofficialScheduleId])
