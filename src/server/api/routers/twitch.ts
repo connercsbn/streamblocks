@@ -537,11 +537,15 @@ export const twitchRouter = createTRPCRouter({
                   const height = width;
                   extractColors({ data, width, height })
                     .then((finalColor) => {
-                      const color = finalColor
-                        .sort((a, b) => b.area - a.area)
-                        .at(0)?.hex;
-
-                      res(color || "purple");
+                      const sortedColors = finalColor.sort(
+                        (a, b) => b.area - a.area
+                      );
+                      const nonSkinToneColor = sortedColors.find(
+                        ({ hue }) => hue < 13 && hue > 34
+                      )?.hex;
+                      res(
+                        nonSkinToneColor || sortedColors.at(0)?.hex || "purple"
+                      );
                     })
                     .catch(rej);
                 } catch (e) {
