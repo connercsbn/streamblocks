@@ -3,6 +3,7 @@ import { useState } from "react";
 import { z } from "zod";
 import { api } from "../utils/api";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
+import Link from "next/link";
 import { useLocalStorage } from "../utils/useLocalStorage";
 export const Live: React.FC<{
   big: boolean;
@@ -59,18 +60,20 @@ export const Live: React.FC<{
       )}
       {open ? (
         liveStatuses?.data?.map((status, key) => (
-          <div
+          <Link
+            target="_blank"
+            href={`https://twitch.tv/${status?.user_login}`}
             key={key}
             className={
               big
-                ? "relative flex cursor-default items-center justify-between px-4 py-1.5 align-middle text-white hover:bg-white/10"
-                : "relative w-full cursor-default justify-center py-1.5 align-middle text-white hover:bg-white/10"
+                ? "relative flex items-center justify-between px-4 py-1.5 align-middle text-white hover:bg-white/10"
+                : "relative w-full justify-center py-1.5 align-middle text-white hover:bg-white/10"
             }
           >
             {big ? (
               <>
                 <div className="flex items-center">
-                  <div className="relative mr-3 h-full overflow-hidden rounded-full border-2 border-red-700">
+                  <div className="relative mr-3 h-full overflow-hidden rounded-full">
                     <Image
                       width={30}
                       height={30}
@@ -106,7 +109,7 @@ export const Live: React.FC<{
                 </div>
               </>
             )}
-          </div>
+          </Link>
         ))
       ) : (
         <></>

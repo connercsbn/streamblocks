@@ -1,7 +1,3 @@
-import type { Streamer } from "@prisma/client";
-import Image from "next/image";
-import Draggable from "react-draggable";
-import { type RouterOutputs } from "../utils/api";
 import { api } from "../utils/api";
 import StreamerInList from "./streamerInList";
 export const TopEight: React.FC<{

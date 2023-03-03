@@ -8,6 +8,7 @@ import Modal from "./modal";
 import { type RouterOutputs } from "../utils/api";
 import { Menu } from "@headlessui/react";
 import { Tooltip } from "react-tooltip";
+import convert from "color-convert";
 
 export default function Streamer({
   streamer,
@@ -28,6 +29,11 @@ export default function Streamer({
   const hasCalendar =
     !!streamer.calendar?.segments.length ||
     !!streamer.calendar?.unofficialSchedule?.unofficialDays.length;
+  const lightened = (hex: string): string => {
+    const [hue] = convert.hex.hsl(hex);
+    return `hsl(${hue} 100% 90%)`;
+  };
+
   return (
     <div
       onMouseOver={() => setIsHovering(true)}
@@ -37,7 +43,14 @@ export default function Streamer({
       } group py-1.5 align-middle text-white hover:bg-white/10`}
     >
       <div
-        className={`relative ${
+        style={
+          top
+            ? {
+                border: `2px solid ${lightened(streamer?.color || "white")}`,
+              }
+            : {}
+        }
+        className={`relative  ${
           size === "full" ? "mr-3" : ""
         } h-full overflow-hidden rounded-full`}
       >

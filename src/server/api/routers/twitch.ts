@@ -643,7 +643,7 @@ export const twitchRouter = createTRPCRouter({
                         (a, b) => b.area - a.area
                       );
                       const nonSkinToneColor = sortedColors.find(
-                        ({ hue }) => hue < 13 && hue > 34
+                        ({ hue }) => hue < 8 && hue > 40
                       )?.hex;
                       res(
                         nonSkinToneColor || sortedColors.at(0)?.hex || "purple"
