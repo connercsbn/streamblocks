@@ -62,7 +62,7 @@ export const Live: React.FC<{
         liveStatuses?.data?.map((status, key) => (
           <Link
             target="_blank"
-            href={`https://twitch.tv/${status?.user_login}`}
+            href={`https://twitch.tv/${status?.user_login || ""}`}
             key={key}
             className={
               big
