@@ -25,18 +25,21 @@ const Home: NextPage = () => {
       return { previousInitiatedState };
     },
   });
-  const initiated = api.twitch.getInitiated.useQuery();
+  const initiated = api.twitch.getInitiated.useQuery(undefined, {
+    enabled: !!sessionData?.user,
+  });
 
-  const [helpShowing, setHelpShowing] = useState(false);
+  const [settingThingsUpStillShowing, setSettingThingsUpStillShowing] =
+    useState(false);
 
   useEffect(() => {
     if (initiated.data === "UNINITIATED") {
       initiate.mutate();
-      setHelpShowing(true);
+      setSettingThingsUpStillShowing(true);
     }
     if (initiated.data === "INITIATED") {
       setTimeout(() => {
-        setHelpShowing(false);
+        setSettingThingsUpStillShowing(false);
       }, 3000);
     }
   }, [initiated, initiate]);
@@ -57,16 +60,10 @@ const Home: NextPage = () => {
         )}
 
         <Transition
-          show={initiated.data !== "INITIATED" || helpShowing}
+          show={initiated.data !== "INITIATED" || settingThingsUpStillShowing}
           enter="transition-opacity duration-1000"
           enterFrom="opacity-0"
           enterTo="opacity-100"
-          beforeEnter={() => {
-            console.log("before enter");
-          }}
-          beforeLeave={() => {
-            console.log("before leave");
-          }}
           leave="transition-opacity duration-1000"
           leaveFrom="opacity-100"
           leaveTo="opacity-0"

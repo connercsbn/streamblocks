@@ -569,12 +569,13 @@ export const twitchRouter = createTRPCRouter({
         (res) => res.status === "fulfilled"
       ) as PromiseFulfilledResult<Streamer>[]
     ).map((val) => val.value);
-    const count = (
-      await ctx.prisma.streamer.createMany({
-        data: followsToAdd,
+    await ctx.prisma.streamer.createMany({
+      data: followsToAdd,
+    });
+    return (
+      await ctx.prisma.streamer.findMany({
+        where: { userId: userId },
       })
-    ).count;
-    console.log("DONE");
-    return count;
+    ).map(({ id }) => id);
   }),
 });
