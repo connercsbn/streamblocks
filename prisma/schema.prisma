@@ -66,32 +66,33 @@ model User {
 }
 
 model Progress {
-  id              Int      @id @default(autoincrement())
-  userId          String   @unique
-  currentStreamer Streamer @relation(fields: [streamerId], references: [id])
-  user            User     @relation(fields: [userId], references: [id])
-  message         String
-  streamerId      Int
-
-  @@index([streamerId])
+  id                Int        @id @default(autoincrement())
+  userId            String     @unique
+  user              User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message           String
+  streamersToAdd    Streamer[]
+  numStreamersToAdd Int
+  numStreamersAdded Int
 }
 
 model Streamer {
-  id           Int        @id @default(autoincrement())
+  id           Int       @id @default(autoincrement())
   twitchId     String
   displayName  String
   imageUrl     String
-  description  String     @db.Text()
+  description  String    @db.Text()
   userId       String
   color        String?
   viewCount    Int
-  isFavorite   Boolean    @default(false)
-  isOnCalendar Boolean    @default(true)
-  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isFavorite   Boolean   @default(false)
+  isOnCalendar Boolean   @default(true)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   calendar     Calendar?
-  Progress     Progress[]
+  progressId   Int?
+  progress     Progress? @relation(fields: [progressId], references: [id])
 
   @@index([userId])
+  @@index([progressId])
 }
 
 model Calendar {

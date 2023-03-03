@@ -3,8 +3,7 @@ import { z } from "zod";
 import { extractColors } from "extract-colors";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import getPixels from "get-pixels";
-import { InitiationState, Streamer } from "@prisma/client";
-import { setTimeout } from "timers";
+import { InitiationState, type Streamer } from "@prisma/client";
 
 const opts = {
   method: "GET",
@@ -295,6 +294,82 @@ export const twitchRouter = createTRPCRouter({
         },
       });
     }),
+  addCalendar: protectedProcedure.mutation(async ({ ctx }) => {
+    const currentProgress = await ctx.prisma.progress.findUniqueOrThrow({
+      where: { userId: ctx.session.user.id },
+      include: { streamersToAdd: true },
+    });
+    const currentStreamerToFetch = currentProgress.streamersToAdd.at(0);
+    if (!currentStreamerToFetch || !currentStreamerToFetch?.id) {
+      await ctx.prisma.user.update({
+        where: { id: ctx.session.user.id },
+        data: {
+          initiationState: "INITIATED",
+        },
+      });
+      return false;
+    }
+    const segments =
+      (
+        await calendarFetch(currentStreamerToFetch.twitchId)
+      )?.data?.segments?.map(({ id, start_time, end_time, title }) => {
+        return {
+          segmentId: id,
+          startTime: start_time,
+          endTime: end_time,
+          title: title ?? "No title",
+        };
+      }) ?? [];
+    console.log(currentStreamerToFetch.id);
+    if (
+      await ctx.prisma.calendar.findUnique({
+        where: { streamerId: currentStreamerToFetch.id },
+      })
+    ) {
+      throw (
+        "Calendar already exists for this streamer: " +
+        currentStreamerToFetch.displayName +
+        ". " +
+        JSON.stringify(
+          currentProgress.streamersToAdd.map((streamer) => streamer.displayName)
+        )
+      );
+    }
+
+    await ctx.prisma.calendar.create({
+      data: {
+        streamerId: currentStreamerToFetch.id,
+        segments: {
+          createMany: {
+            data: segments,
+          },
+        },
+      },
+    });
+    console.log({
+      set: currentProgress.streamersToAdd
+        .filter((streamer) => streamer.id !== currentStreamerToFetch.id)
+        .map((streamer) => ({ id: streamer.id })),
+    });
+    const ret = await ctx.prisma.progress.update({
+      where: { userId: ctx.session.user.id },
+      data: {
+        streamersToAdd: {
+          set: [
+            ...currentProgress.streamersToAdd
+              .filter((streamer) => streamer.id !== currentStreamerToFetch.id)
+              .map((streamer) => ({ id: streamer.id })),
+          ],
+        },
+        numStreamersAdded: currentProgress.numStreamersAdded + 1,
+      },
+      include: {
+        streamersToAdd: true,
+      },
+    });
+    console.log({ ret });
+    return ret;
+  }),
   addCalendars: protectedProcedure.mutation(async ({ ctx }) => {
     const userId = ctx.session.user.id;
     const streamers = await ctx.prisma.streamer.findMany({
@@ -408,11 +483,20 @@ export const twitchRouter = createTRPCRouter({
         initiationState: InitiationState.INITIATING,
       },
     });
-    await new Promise((res) => {
-      setTimeout(() => {
-        res(0);
-      }, 6000);
+  }),
+  finishInitation: protectedProcedure.mutation(async ({ ctx }) => {
+    const user = await ctx.prisma.user.findUniqueOrThrow({
+      where: {
+        id: ctx.session.user.id,
+      },
     });
+    if (user.initiationState !== "INITIATING") {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "User needs to be initiating already",
+      });
+    }
+    console.log("FINISHING INITIATION");
     await ctx.prisma.user.update({
       where: {
         id: ctx.session.user.id,
@@ -421,7 +505,6 @@ export const twitchRouter = createTRPCRouter({
         initiationState: InitiationState.INITIATED,
       },
     });
-    console.log("done");
   }),
   getFollowing: protectedProcedure.query(async ({ ctx }) => {
     return (
@@ -474,6 +557,7 @@ export const twitchRouter = createTRPCRouter({
       });
     }),
   follow: protectedProcedure.mutation(async ({ ctx }) => {
+    // if progress has streamers to go through and status is initiated then don't fetch and return early
     const userId = ctx.session.user.id;
     const { providerAccountId: twitchId } =
       await ctx.prisma.account.findFirstOrThrow({
@@ -481,6 +565,24 @@ export const twitchRouter = createTRPCRouter({
           userId: userId,
         },
       });
+    const initiationState = (
+      await ctx.prisma.user.findUnique({
+        where: { id: userId },
+      })
+    )?.initiationState;
+    // return early if user is still initiating and has already fetched the streamers they need
+    if (initiationState !== "INITIATED") {
+      if (
+        (
+          await ctx.prisma.user.findUniqueOrThrow({
+            where: { id: userId },
+            include: { progress: true },
+          })
+        ).progress
+      ) {
+        return;
+      }
+    }
     const followingDb = (
       await ctx.prisma.user.findFirstOrThrow({
         where: { id: userId },
@@ -572,10 +674,21 @@ export const twitchRouter = createTRPCRouter({
     await ctx.prisma.streamer.createMany({
       data: followsToAdd,
     });
-    return (
-      await ctx.prisma.streamer.findMany({
-        where: { userId: userId },
-      })
-    ).map(({ id }) => id);
+    const streamersToAdd = await ctx.prisma.streamer.findMany({
+      where: { userId: userId },
+    });
+    if (initiationState !== "INITIATED") {
+      await ctx.prisma.progress.create({
+        data: {
+          userId: userId,
+          numStreamersToAdd: streamersToAdd.length,
+          numStreamersAdded: 0,
+          message: "I don't know what to put here.",
+          streamersToAdd: {
+            connect: streamersToAdd.map((streamer) => ({ id: streamer.id })),
+          },
+        },
+      });
+    }
   }),
 });

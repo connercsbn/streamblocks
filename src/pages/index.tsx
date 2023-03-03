@@ -1,9 +1,11 @@
 import { useSession } from "next-auth/react";
 import Nav from "../components/nav";
+import type { Progress } from "@prisma/client";
 import { useEffect, useState } from "react";
 import MyCalendar from "../components/calendar";
 import Image from "next/image";
 import { type NextPage } from "next";
+import type { Streamer } from "@prisma/client";
 import Sidebar from "../components/sidebar";
 import { signIn } from "next-auth/react";
 import mrbeast from "../mrbeast.png";
@@ -106,6 +108,38 @@ const Home: NextPage = () => {
   return <></>;
 };
 const SettingThingsUpForYou = () => {
+  const apiContext = api.useContext();
+  const addCalendar = api.twitch.addCalendar.useMutation();
+  const initiated = api.twitch.getInitiated.useQuery();
+  const [progress, setProgress] = useState<
+    (Progress & { streamersToAdd: Streamer[] }) | false
+  >(false);
+  const follow = api.twitch.follow.useMutation({
+    onSettled: () => {
+      void apiContext.twitch.getFollowing.invalidate();
+      void apiContext.twitch.getLiveStatus.invalidate();
+    },
+  });
+  const addAllCalendars = async () => {
+    let progress: (Progress & { streamersToAdd: Streamer[] }) | false = false;
+
+    console.log("adding next calendar");
+    while ((progress = await addCalendar.mutateAsync())) {
+      setProgress(progress);
+    }
+    void apiContext.twitch.getInitiated.invalidate();
+  };
+
+  if (addCalendar.isIdle && follow.isIdle) {
+    follow.mutate(undefined, {
+      onError(error, variables, context) {
+        console.log({ error, variables, context });
+      },
+      onSuccess: () => {
+        void addAllCalendars();
+      },
+    });
+  }
   const [show, setShow] = useState(false);
   useEffect(() => {
     setShow(true);
@@ -120,12 +154,47 @@ const SettingThingsUpForYou = () => {
       leaveFrom="opacity-100"
       leaveTo="opacity-0"
     >
-      <div className="text-2xl text-white">
-        Setting some things up for you...
+      <div className="text-white">
+        Setting some things up for you... <br></br>
+        <br></br>
+        <p>
+          {progress && (
+            <>
+              <pre>
+                {JSON.stringify(
+                  {
+                    currentStreamer: progress.streamersToAdd[0]?.displayName,
+                    streamersToAddLength: progress.streamersToAdd.length,
+                    totalToAdd: progress.numStreamersToAdd,
+                    officialAdded: progress.numStreamersAdded,
+                  },
+                  undefined,
+                  2
+                )}
+              </pre>
+              <br></br>
+              <br></br>
+              <br></br>
+              <pre>
+                {new Array(progress.numStreamersAdded)
+                  .fill(0)
+                  .map(() => "X")
+                  .join("") +
+                  new Array(
+                    progress.numStreamersToAdd - progress.numStreamersAdded
+                  )
+                    .fill(0)
+                    .map(() => "-")
+                    .join("")}
+              </pre>
+            </>
+          )}
+        </p>
       </div>
     </Transition>
   );
 };
+
 const TwitchIcon = () => (
   <svg
     overflow="visible"
