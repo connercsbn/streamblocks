@@ -275,7 +275,7 @@ export function Modal({
                     handleResetDays();
                   }}
                 >
-                  never mind
+                 cancel 
                 </button>
               </div>
             </Dialog.Panel>

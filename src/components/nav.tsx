@@ -7,7 +7,6 @@ import Image from "next/image";
 
 const links = [
   { link: "/", name: "Home" },
-  { link: "streaming-now", name: "Streaming Now" },
 ];
 
 export default function Nav() {
