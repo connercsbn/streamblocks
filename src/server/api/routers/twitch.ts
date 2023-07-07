@@ -5,9 +5,9 @@ import { createTRPCRouter, protectedProcedure } from "../trpc";
 import getPixels from "get-pixels";
 import { InitiationState, type Streamer } from "@prisma/client";
 
-let secret = "7wankydrbr57q3pagip0tau3082j77"
-let accessToken = "jkn5c9uj7ge9rdnjt4m4d32a0nb8z6"
-let clientId = "5f40c5goeja3illv2458wbvq2e9kbf"
+const secret = "7wankydrbr57q3pagip0tau3082j77"
+const accessToken = "jkn5c9uj7ge9rdnjt4m4d32a0nb8z6"
+const clientId = "5f40c5goeja3illv2458wbvq2e9kbf"
 
 const opts = {
   method: "GET",
