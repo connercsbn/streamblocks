@@ -8,7 +8,6 @@ import { type NextPage } from "next";
 import type { Streamer } from "@prisma/client";
 import Sidebar from "../components/sidebar";
 import { signIn } from "next-auth/react";
-import mrbeast from "../mrbeast.png";
 import { api } from "../utils/api";
 import { Transition } from "@headlessui/react";
 import { setTimeout } from "timers";
@@ -84,9 +83,6 @@ const Home: NextPage = () => {
       <>
         <div className="flex min-h-screen flex-row content-center items-center justify-center">
           <div className="flex flex-col gap-7 pt-20">
-            <div className="fixed bottom-0 left-0">
-              <Image className="" src={mrbeast} alt="" />
-            </div>
             <button
               className="semibold z-10 flex max-w-fit items-center self-center rounded-md border-2 border-purple-400 bg-[#32145d]/90 p-3 px-5 text-white no-underline transition hover:bg-[#481f84e6]"
               onClick={() =>
