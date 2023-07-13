@@ -41,3 +41,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 notes
+
+/rebuild.sh
+/start.sh
