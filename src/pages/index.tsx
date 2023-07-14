@@ -96,7 +96,7 @@ const Home: NextPage = () => {
               }
             >
               <span>
-                Sign in with <span className="font-bold">Twitch</span>
+                Sign in with <span className="font-bold">Twitch (test)</span>
               </span>
               <TwitchIcon />
             </button>
