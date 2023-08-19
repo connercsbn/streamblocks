@@ -59,12 +59,17 @@ export const Live: React.FC<{
       )}
       {open ? (
         liveStatuses?.data?.map((status, key) => (
-          <div
+          <a
+            href={`https://www.twitch.tv/${
+              status?.streamer?.displayName ?? ""
+            }`}
+            rel="noreferrer"
+            target="_blank"
             key={key}
             className={
               big
-                ? "relative flex cursor-default items-center justify-between px-4 py-1.5 align-middle text-white hover:bg-white/10"
-                : "relative w-full cursor-default justify-center py-1.5 align-middle text-white hover:bg-white/10"
+                ? "relative flex items-center justify-between px-4 py-1.5 align-middle text-white hover:bg-white/10"
+                : "relative w-full justify-center py-1.5 align-middle text-white hover:bg-white/10"
             }
           >
             {big ? (
@@ -106,7 +111,7 @@ export const Live: React.FC<{
                 </div>
               </>
             )}
-          </div>
+          </a>
         ))
       ) : (
         <></>
