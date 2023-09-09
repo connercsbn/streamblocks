@@ -5,18 +5,16 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import { useState } from "react";
 import Image from "next/image";
 
-const links = [
-  { link: "/", name: "Home" },
-];
+const links = [{ link: "/", name: "Home" }];
 
 export default function Nav() {
   const { data: sessionData } = useSession();
   const [navOpen, setNavOpen] = useState(false);
   const router = useRouter();
   const activeClasses =
-    "mx-1 relative inline-flex items-center rounded-md border border-transparent px-2 py-1 transition-colors hover:no-underline border bg-purple-200/50 text-purple-800 dark:border-purple-200/20 dark:bg-purple-200/10 dark:hover:border-purple-200/50 rounded-lg text-purple-800 hover:bg-purple-200/50 hover:text-purple-800 dark:text-purple-100 dark:hover:bg-purple-200/10 dark:hover:text-purple-300";
+    "mx-1 text-white relative inline-flex items-center rounded-md border border-transparent px-2 py-1 transition-colors hover:no-underline border hover:bg-purple-200/70 bg-purple-200/50 text-white dark:border-purple-200/20 dark:bg-purple-200/10 dark:hover:border-purple-200/50 rounded-lg text-white hover:bg-purple-200/50 hover:text-white dark:text-white dark:hover:bg-purple-200/10 dark:hover:text-purple-300";
   const inactiveClasses =
-    "mx-1 relative inline-flex items-center rounded-lg border border-transparent py-1 px-2 text-purple-100 transition-colors hover:bg-purple-200/10 hover:text-purple-300 hover:no-underline";
+    "mx-1 relative inline-flex items-center rounded-lg border border-transparent py-1 px-2 text-white transition-colors hover:bg-purple-200/10 hover:text-purple-300 hover:no-underline";
   return (
     <>
       <div className="flex h-14 w-full justify-between self-center px-2 text-lg font-normal text-purple-200">
