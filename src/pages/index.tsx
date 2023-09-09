@@ -106,6 +106,7 @@ const SettingThingsUpForYou = () => {
   };
 
   if (addCalendar.isIdle && follow.isIdle) {
+    console.log("call follow mutation");
     follow.mutate(undefined, {
       onError(error, variables, context) {
         console.log({ error, variables, context });
